@@ -1,2 +1,20 @@
+# Apple
+.DS_Store
+
 /venv/
+
+# IDEs
 /.idea/
+.vscode
+
+# Translations
+*.mo
+*.pot
+
+# Django
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+.env
