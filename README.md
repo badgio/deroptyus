@@ -8,5 +8,5 @@ This project was carried out in the first semester of the fifth year of informat
 ## Contributors
 | <a href="https://github.com/goncalves-diogo" target="_blank">**Diogo Gonçalves**</a> | <a href="https://github.com/MAACarvalho" target="_blank">**Miguel Carvalho**</a> |
 | :---: | :---:|
-| [![Diogo Gonçalves](https://avatars0.githubusercontent.com/u/33640150?s=400&u=a3fe0cf5871fde6b4d424e1db77bd1e08cfbb647&v=4)](https://github.com/goncalves-diogo) | [![Miguel Carvalho](https://avatars0.githubusercontent.com/u/25797331?s=200)](https://github.com/MAACarvalho) |
+| [![Diogo Gonçalves](https://avatars0.githubusercontent.com/u/33640150?s=200&u=a3fe0cf5871fde6b4d424e1db77bd1e08cfbb647&v=4)](https://github.com/goncalves-diogo) | [![Miguel Carvalho](https://avatars0.githubusercontent.com/u/25797331?s=200)](https://github.com/MAACarvalho) |
 | <a href="https://github.com/goncalves-diogo" target="_blank">`https://github.com/goncalves-diogo`</a> | <a href="https://github.com/MAACarvalho" target="_blank">`github.com/MAACarvalho`</a> |
