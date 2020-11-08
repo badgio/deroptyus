@@ -39,7 +39,7 @@ class FirebaseBackend(BaseBackend):
         except:
             return None
 
-        return user, None
+        return user
 
     def create_user_email_password(self, email, password):
 

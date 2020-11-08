@@ -1,4 +1,4 @@
-from django.http import *
+from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest
 from django.core.serializers import serialize
 
 from . import queries
