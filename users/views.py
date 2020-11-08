@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseNotAllowed, HttpResponseBadRequest
+from django.http import HttpResponse
 from django.core.serializers import serialize
 
 from . import queries
@@ -14,7 +14,7 @@ def appers (request):
 
     else:
 
-        return HttpResponseNotAllowed(['POST'])
+        return HttpResponse(status=405, reason=f"Method Not Allowed: {request.method} not supported")
 
 def create_app_user (request):
 
@@ -30,7 +30,7 @@ def create_app_user (request):
                                         AppUser.objects.filter(pk=app_user.pk),
                                         fields=('email', 'date_joined'))
 
-            return HttpResponse(serialized_user, content_type="text/json-comment-filtered")
+            return HttpResponse(serialized_user, status=201, content_type="text/json-comment-filtered")
 
 
         except queries.FirebaseError:
@@ -43,4 +43,4 @@ def create_app_user (request):
 
     else:
 
-        return HttpResponseBadRequest()
+        return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
