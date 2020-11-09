@@ -30,7 +30,7 @@ def create_app_user (request):
                                         AppUser.objects.filter(pk=app_user.pk),
                                         fields=('email', 'date_joined'))
 
-            return HttpResponse(serialized_user, status=201, content_type="text/json-comment-filtered")
+            return HttpResponse(serialized_user, status=201, content_type="application/json")
 
 
         except queries.FirebaseError:
