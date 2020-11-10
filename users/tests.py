@@ -19,7 +19,7 @@ class TestCase (TestCase):
         client = Client()
 
         # Sending request to create an app user
-        response = client.post('/users/appers', {'email': email, 'password': password})
+        response = client.post('/users/mobile', {'email': email, 'password': password})
 
         # Asserting the success of the user creation (assuming the user doesn't exist)
         self.assertEqual(response.status_code, 200)
@@ -36,7 +36,7 @@ class TestCase (TestCase):
         firebase_user = FirebaseUser.objects.get(user_id=user_id)
 
         # Assert you can't create another app user with same email
-        response = client.post('/users/appers', {'email': email, 'password': password})
+        response = client.post('/users/mobile', {'email': email, 'password': password})
         self.assertGreaterEqual(response.status_code, 400)
 
         # Removing the user from the firebase DB (as it's not temporary)
