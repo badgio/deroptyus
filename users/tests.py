@@ -22,7 +22,7 @@ class TestCase (TestCase):
         response = client.post('v1/users/mobile', {'email': email, 'password': password})
 
         # Asserting the success of the user creation (assuming the user doesn't exist)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
         # Testing for app user creation
         self.assertEqual(AppUser.objects.filter(email=email).count(), 1)
