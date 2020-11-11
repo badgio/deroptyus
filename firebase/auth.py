@@ -1,15 +1,15 @@
-import os
-
 from django.contrib.auth.backends import BaseBackend
 
 import firebase_admin
 from firebase_admin import auth
 
+from django.conf import settings
+
 from .models import FirebaseUser
 
 class FirebaseBackend(BaseBackend):
 
-    creds = firebase_admin.credentials.Certificate(os.getenv("FIREBASE_API_KEY") or 'firebase.json')
+    creds = firebase_admin.credentials.Certificate(settings.FIREBASE_API_KEY)
     app = firebase_admin.initialize_app(creds)
 
     def authenticate(self, request, **kwargs):
@@ -47,8 +47,6 @@ class FirebaseBackend(BaseBackend):
             firebase_user = auth.get_user_by_email(email)
         except auth.UserNotFoundError:
             firebase_user = auth.create_user(email=email, password=password, app=self.app)
-        except:
-            return None
 
         return firebase_user.uid
 
