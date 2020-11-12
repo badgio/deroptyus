@@ -1,5 +1,4 @@
 import json
-from datetime import date
 
 from django.core.serializers import serialize
 from django.http import HttpResponse, JsonResponse
