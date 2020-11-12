@@ -69,7 +69,7 @@ def create_manager_user(email, password):
 
     try:
 
-        # Checking if there's already an App User associated with the user
+        # Checking if there's already a Manager User associated with the user
         ManagerUser.objects.get(user_id=user.id)
 
         raise ManagerExistsError("Email already associated with a Manager.")
@@ -91,7 +91,7 @@ def create_promoter_user(email, password):
 
     try:
 
-        # Checking if there's already an App User associated with the user
+        # Checking if there's already a Promoter User associated with the user
         PromoterUser.objects.get(user_id=user.id)
 
         raise PromoterExistsError("Email already associated with a Promoter.")
