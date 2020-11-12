@@ -59,7 +59,8 @@ def create_apper(request):
                 serialized_user = serialize('json',
                                             AppUser.objects.filter(pk=app_user.pk),
                                             fields=(
-                                                'email', 'name', 'date_birth', 'country', 'city', 'gender', 'date_joined'))
+                                                'email', 'name', 'date_birth', 'country', 'city', 'gender',
+                                                'date_joined'))
                 user_fields = json.loads(serialized_user)[0]["fields"]
 
                 return JsonResponse(user_fields, status=201)
