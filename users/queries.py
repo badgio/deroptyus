@@ -1,11 +1,11 @@
-from .models import User, AppUser, PromoterUser, ManagerUser
-from firebase.models import FirebaseUser
 from firebase.auth import FirebaseBackend
+from firebase.models import FirebaseUser
+from .models import User, AppUser, PromoterUser, ManagerUser
 
 firebase_backend = FirebaseBackend()
 
-def create_user (email, password):
 
+def create_user(email, password):
     # Select auth method based on version
     try:
 
@@ -34,8 +34,8 @@ def create_user (email, password):
 
     return user
 
-def create_app_user (email, password, name, date_birth, country, city, gender):
 
+def create_app_user(email, password, name, date_birth, country, city, gender):
     # Creating a user in the firebase console and creating the FirebaseUser and User models
     user = create_user(email, password)
 
@@ -49,15 +49,21 @@ def create_app_user (email, password, name, date_birth, country, city, gender):
     except AppUser.DoesNotExist:
 
         # Creating an AppUser
-        app_user = AppUser(email=email, name=name, date_birth=date_birth, country=country, city=city, gender=gender, user=user)
+        app_user = AppUser(email=email,
+                           name=name,
+                           date_birth=date_birth,
+                           country=country,
+                           city=city,
+                           gender=gender,
+                           user=user)
         app_user.save()
 
         # Set the App User permissions
 
     return app_user
 
-def create_manager_user (email, password):
 
+def create_manager_user(email, password):
     # Creating a user in the firebase console and creating the FirebaseUser and User models
     user = create_user(email, password)
 
@@ -78,8 +84,8 @@ def create_manager_user (email, password):
 
     return manager_user
 
-def create_promoter_user (email, password):
 
+def create_promoter_user(email, password):
     # Creating a user in the firebase console and creating the FirebaseUser and User models
     user = create_user(email, password)
 
@@ -100,14 +106,18 @@ def create_promoter_user (email, password):
 
     return promoter_user
 
-class AppUserExistsError (Exception):
+
+class AppUserExistsError(Exception):
     pass
 
-class FirebaseError (Exception):
+
+class FirebaseError(Exception):
     pass
+
 
 class ManagerExistsError(Exception):
     pass
+
 
 class PromoterExistsError(Exception):
     pass

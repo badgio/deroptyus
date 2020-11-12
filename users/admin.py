@@ -1,7 +1,9 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, AppUser, ManagerUser, PromoterUser
+
 from .forms import UserCreationForm, UserChangeForm
+from .models import User, AppUser, ManagerUser, PromoterUser
+
 
 # Register your models here.
 
@@ -19,7 +21,7 @@ class UserAdmin(UserAdmin):
         (None, {
             'classes': ('wide',),
             'fields': ('id', 'is_staff', 'is_active')}
-        ),
+         ),
     )
     search_fields = ('id',)
     ordering = ('id',)

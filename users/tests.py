@@ -1,25 +1,25 @@
-from django.test import TestCase
 from django.test import Client
+from django.test import TestCase
 from firebase_admin import auth
-from .models import User, AppUser, ManagerUser, PromoterUser
-from firebase.models import FirebaseUser
+
 from firebase.auth import FirebaseBackend
+from firebase.models import FirebaseUser
+from .models import AppUser, ManagerUser, PromoterUser
+
 
 # Create your tests here.
 
-class TestCase (TestCase):
-
+class TestCase(TestCase):
     firebase_backend = FirebaseBackend()
 
-    def test_app_user_creation (self):
-
-        email       = "app_user@test.com"
-        password    = "test_password"
-        name        = "app_user"
-        date_birth  = "2000-02-20"
-        gender      = "female"
-        country     = "portugal"
-        city        = "braga"
+    def test_app_user_creation(self):
+        email = "app_user@test.com"
+        password = "test_password"
+        name = "app_user"
+        date_birth = "2000-02-20"
+        gender = "female"
+        country = "portugal"
+        city = "braga"
 
         client = Client()
 
@@ -63,8 +63,7 @@ class TestCase (TestCase):
         # Removing the user from the firebase DB (as it's not temporary)
         auth.delete_user(firebase_user.id, app=self.firebase_backend.app)
 
-    def test_manager_user_creation (self):
-
+    def test_manager_user_creation(self):
         email = "manager@test.com"
         password = "test_password"
 
@@ -94,8 +93,7 @@ class TestCase (TestCase):
         # Removing the user from the firebase DB (as it's not temporary)
         auth.delete_user(firebase_user.id, app=self.firebase_backend.app)
 
-    def test_promoter_user_creation (self):
-
+    def test_promoter_user_creation(self):
         email = "promoter@test.com"
         password = "test_password"
 
@@ -125,8 +123,7 @@ class TestCase (TestCase):
         # Removing the user from the firebase DB (as it's not temporary)
         auth.delete_user(firebase_user.id, app=self.firebase_backend.app)
 
-    def test_manager_promoter_user_creation (self):
-
+    def test_manager_promoter_user_creation(self):
         email = "manager_promoter@test.com"
         password = "test_password"
 

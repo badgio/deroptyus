@@ -1,12 +1,12 @@
-from django.db import models
-from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.contrib.auth.models import AbstractUser
+from django.db import models
 
 from .managers import UserManager
 
+
 # Create your models here.
 class User(AbstractUser):
-
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_superuser = models.BooleanField(default=False)
@@ -24,40 +24,36 @@ class User(AbstractUser):
     objects = UserManager()
 
     def __str__(self):
-
         return self.id
 
-class AppUser(models.Model):
 
-    email       = models.EmailField(max_length=255, unique=True)
-    name        = models.CharField(max_length=255)
+class AppUser(models.Model):
+    email = models.EmailField(max_length=255, unique=True)
+    name = models.CharField(max_length=255)
     date_joined = models.DateTimeField(auto_now_add=True)
-    date_birth  = models.DateField()
-    country     = models.CharField(max_length=255)
-    city        = models.CharField(max_length=255)
-    gender      = models.CharField(max_length=255)
-    user        = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    date_birth = models.DateField()
+    country = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    gender = models.CharField(max_length=255)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
-
         return self.email
+
 
 class ManagerUser(models.Model):
-
-    email       = models.EmailField(max_length=255, unique=True)
+    email = models.EmailField(max_length=255, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    user        = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
-
         return self.email
 
-class PromoterUser(models.Model):
 
-    email       = models.EmailField(max_length=255, unique=True)
+class PromoterUser(models.Model):
+    email = models.EmailField(max_length=255, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    user        = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
-
         return self.email
