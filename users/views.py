@@ -2,7 +2,7 @@ import json
 from datetime import date
 
 from django.core.serializers import serialize
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 from . import queries
 from .models import AppUser, PromoterUser, ManagerUser
@@ -41,15 +41,15 @@ def promoters(request):
 
 
 def create_apper(request):
-    email = request.POST["email"]
-    password = request.POST["password"]
-    name = request.POST["name"]
-    date_birth = date.fromisoformat(request.POST["date_birth"])
-    country = request.POST["country"]
-    city = request.POST["city"]
-    gender = request.POST["gender"]
+    email = request.POST.get("email")
+    password = request.POST.get("password")
+    name = request.POST.get("name")
+    date_birth = request.POST.get("date_birth")
+    country = request.POST.get("country")
+    city = request.POST.get("city")
+    gender = request.POST.get("gender")
 
-    if email and password and name and date_birth and country and city and gender:
+    if email and password:
 
         try:
 
@@ -60,7 +60,7 @@ def create_apper(request):
                                             'email', 'name', 'date_birth', 'country', 'city', 'gender', 'date_joined'))
             user_fields = json.loads(serialized_user)[0]["fields"]
 
-            return HttpResponse([user_fields], status=201, content_type="application/json")
+            return JsonResponse(user_fields, status=201)
 
         except queries.FirebaseError:
 
@@ -76,8 +76,8 @@ def create_apper(request):
 
 
 def create_manager(request):
-    email = request.POST["email"]
-    password = request.POST["password"]
+    email = request.POST.get("email")
+    password = request.POST.get("password")
 
     if email and password:
 
@@ -89,7 +89,7 @@ def create_manager(request):
                                         fields=('email', 'date_joined'))
             user_fields = json.loads(serialized_user)[0]["fields"]
 
-            return HttpResponse([user_fields], status=201, content_type="application/json")
+            return JsonResponse(user_fields, status=201)
 
         except queries.FirebaseError:
 
@@ -105,8 +105,8 @@ def create_manager(request):
 
 
 def create_promoter(request):
-    email = request.POST["email"]
-    password = request.POST["password"]
+    email = request.POST.get("email")
+    password = request.POST.get("password")
 
     if email and password:
 
@@ -118,7 +118,7 @@ def create_promoter(request):
                                         fields=('email', 'date_joined'))
             user_fields = json.loads(serialized_user)[0]["fields"]
 
-            return HttpResponse([user_fields], status=201, content_type="application/json")
+            return JsonResponse(user_fields, status=201)
 
         except queries.FirebaseError:
 

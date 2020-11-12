@@ -29,12 +29,12 @@ class User(AbstractUser):
 
 class AppUser(models.Model):
     email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, null=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    date_birth = models.DateField()
-    country = models.CharField(max_length=255)
-    city = models.CharField(max_length=255)
-    gender = models.CharField(max_length=255)
+    date_birth = models.DateField(null=True)
+    country = models.CharField(max_length=255, null=True)
+    city = models.CharField(max_length=255, null=True)
+    gender = models.CharField(max_length=255, null=True)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT)
 
     def __str__(self):
