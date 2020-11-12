@@ -1,15 +1,11 @@
-from .models import User, AppUser
-from firebase.models import FirebaseUser
 from firebase.auth import FirebaseBackend
+from firebase.models import FirebaseUser
+from .models import User, AppUser, PromoterUser, ManagerUser
 
 firebase_backend = FirebaseBackend()
 
-def create_app_user (email, password):
 
-    if AppUser.objects.filter(email=email).count() != 0:
-
-        raise AppUserExistsError("Email already in use.")
-
+def create_user(email, password):
     # Select auth method based on version
     try:
 
@@ -19,24 +15,109 @@ def create_app_user (email, password):
 
         raise FirebaseError(f"Firebase retrieval error: {e}")
 
-    # Create entry for the user token
-    user = User()
-    user.save()
+    # Checking if a FirebaseUser already exists with the given ID
+    try:
 
-    # Creating "Auth" User
-    firebase_user = FirebaseUser(id=firebase_id, user=user)
-    firebase_user.save()
+        # Getting the FirebaseUser and User
+        firebase_user = FirebaseUser.objects.get(pk=firebase_id)
+        user = User.objects.get(pk=firebase_user.user_id)
 
-    # Set the app user permissions
+    except FirebaseUser.DoesNotExist:
 
-    # Create the actual user
-    app_user = AppUser(email=email, user=user)
-    app_user.save()
+        # Create entry for a User
+        user = User()
+        user.save()
+
+        # Creating a FirebaseUser
+        firebase_user = FirebaseUser(id=firebase_id, user=user)
+        firebase_user.save()
+
+    return user
+
+
+def create_app_user(email, password, name, date_birth, country, city, gender):
+    # Creating a user in the firebase console and creating the FirebaseUser and User models
+    user = create_user(email, password)
+
+    try:
+
+        # Checking if there's already an App User associated with the user
+        AppUser.objects.get(user_id=user.id)
+
+        raise AppUserExistsError("Email already associated with an App User.")
+
+    except AppUser.DoesNotExist:
+
+        # Creating an AppUser
+        app_user = AppUser(email=email,
+                           name=name,
+                           date_birth=date_birth,
+                           country=country,
+                           city=city,
+                           gender=gender,
+                           user=user)
+        app_user.save()
+
+        # Set the App User permissions
 
     return app_user
 
-class AppUserExistsError (Exception):
+
+def create_manager_user(email, password):
+    # Creating a user in the firebase console and creating the FirebaseUser and User models
+    user = create_user(email, password)
+
+    try:
+
+        # Checking if there's already a Manager User associated with the user
+        ManagerUser.objects.get(user_id=user.id)
+
+        raise ManagerExistsError("Email already associated with a Manager.")
+
+    except ManagerUser.DoesNotExist:
+
+        # Creating an ManagerUser
+        manager_user = ManagerUser(email=email, user=user)
+        manager_user.save()
+
+        # Set the Manager User permissions
+
+    return manager_user
+
+
+def create_promoter_user(email, password):
+    # Creating a user in the firebase console and creating the FirebaseUser and User models
+    user = create_user(email, password)
+
+    try:
+
+        # Checking if there's already a Promoter User associated with the user
+        PromoterUser.objects.get(user_id=user.id)
+
+        raise PromoterExistsError("Email already associated with a Promoter.")
+
+    except PromoterUser.DoesNotExist:
+
+        # Creating a PromoterUser
+        promoter_user = PromoterUser(email=email, user=user)
+        promoter_user.save()
+
+        # Set the Promoter User permissions
+
+    return promoter_user
+
+
+class AppUserExistsError(Exception):
     pass
 
-class FirebaseError (Exception):
+
+class FirebaseError(Exception):
+    pass
+
+
+class ManagerExistsError(Exception):
+    pass
+
+
+class PromoterExistsError(Exception):
     pass

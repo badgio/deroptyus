@@ -20,7 +20,6 @@ jobs:
         # healthcheck for postgres
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -36,8 +35,14 @@ jobs:
         run: pip install -r requirements.txt
       - name: Run migrations
         run: python manage.py migrate
+        env:
+          FIREBASE_PRIVATE_KEY: "${{ secrets.FIREBASE_PRIVATE_KEY }}"
+          FIREBASE_PRIVATE_KEY_ID: "${{ secrets.FIREBASE_PRIVATE_KEY_ID }}"
       - name: Run test suite
         run: python manage.py test
+        env:
+          FIREBASE_PRIVATE_KEY: "${{ secrets.FIREBASE_PRIVATE_KEY }}"
+          FIREBASE_PRIVATE_KEY_ID: "${{ secrets.FIREBASE_PRIVATE_KEY_ID }}"
 
   static:
     name: Static analysis
@@ -46,8 +51,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-      - name: Setup .env variables
-        run: cp .env.ci .env
       - name: Setup Python version
         uses: actions/setup-python@v2
         with:

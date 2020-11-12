@@ -1,15 +1,15 @@
 from django.test import TestCase
-from .auth import FirebaseBackend
 from firebase_admin import auth
+
+from .auth import FirebaseBackend
+
 
 # Create your tests here.
 
-class FirebaseTestCase (TestCase):
-
+class FirebaseTestCase(TestCase):
     firebase_backend = FirebaseBackend()
 
-    def test_creation (self):
-
+    def test_creation(self):
         email = "email@test.com"
         password = "test_password"
 
