@@ -40,93 +40,115 @@ def promoters(request):
 
 
 def create_apper(request):
-    email = request.POST.get("email")
-    password = request.POST.get("password")
-    name = request.POST.get("name")
-    date_birth = request.POST.get("date_birth")
-    country = request.POST.get("country")
-    city = request.POST.get("city")
-    gender = request.POST.get("gender")
+    try:
+        json_data = json.loads(request.body)
 
-    if email and password:
+        email = json_data.get("email")
+        password = json_data.get("password")
+        name = json_data.get("name", None)
+        date_birth = json_data.get("date_birth", None)
+        country = json_data.get("country", None)
+        city = json_data.get("city", None)
+        gender = json_data.get("gender", None)
 
-        try:
+        if email and password:
 
-            app_user = queries.create_app_user(email, password, name, date_birth, country, city, gender)
-            serialized_user = serialize('json',
-                                        AppUser.objects.filter(pk=app_user.pk),
-                                        fields=(
-                                            'email', 'name', 'date_birth', 'country', 'city', 'gender', 'date_joined'))
-            user_fields = json.loads(serialized_user)[0]["fields"]
+            try:
 
-            return JsonResponse(user_fields, status=201)
+                app_user = queries.create_app_user(email, password, name, date_birth, country, city, gender)
+                serialized_user = serialize('json',
+                                            AppUser.objects.filter(pk=app_user.pk),
+                                            fields=(
+                                                'email', 'name', 'date_birth', 'country', 'city', 'gender',
+                                                'date_joined'))
+                user_fields = json.loads(serialized_user)[0]["fields"]
 
-        except queries.FirebaseError:
+                return JsonResponse(user_fields, status=201)
 
-            return HttpResponse(status=503, reason="Internal Server Error: Firebase")
+            except queries.FirebaseError:
 
-        except queries.AppUserExistsError:
+                return HttpResponse(status=503, reason="Internal Server Error: Firebase")
 
-            return HttpResponse(status=409, reason="Conflict: Email already associated with an app user")
+            except queries.AppUserExistsError:
 
-    else:
+                return HttpResponse(status=409, reason="Conflict: Email already associated with an app user")
 
-        return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
+        else:
+
+            return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
+
+    except json.JSONDecodeError:
+
+        return HttpResponse(status=400, reason="Bad Request: JSON object expected in POST body")
 
 
 def create_manager(request):
-    email = request.POST.get("email")
-    password = request.POST.get("password")
+    try:
+        json_data = json.loads(request.body)
 
-    if email and password:
+        email = json_data.get("email")
+        password = json_data.get("password")
 
-        try:
+        if email and password:
 
-            manager_user = queries.create_manager_user(email, password)
-            serialized_user = serialize('json',
-                                        ManagerUser.objects.filter(pk=manager_user.pk),
-                                        fields=('email', 'date_joined'))
-            user_fields = json.loads(serialized_user)[0]["fields"]
+            try:
 
-            return JsonResponse(user_fields, status=201)
+                manager_user = queries.create_manager_user(email, password)
+                serialized_user = serialize('json',
+                                            ManagerUser.objects.filter(pk=manager_user.pk),
+                                            fields=('email', 'date_joined'))
+                user_fields = json.loads(serialized_user)[0]["fields"]
 
-        except queries.FirebaseError:
+                return JsonResponse(user_fields, status=201)
 
-            return HttpResponse(status=503, reason="Internal Server Error: Firebase")
+            except queries.FirebaseError:
 
-        except queries.ManagerExistsError:
+                return HttpResponse(status=503, reason="Internal Server Error: Firebase")
 
-            return HttpResponse(status=409, reason="Conflict: Email already associated with a manager")
+            except queries.ManagerExistsError:
 
-    else:
+                return HttpResponse(status=409, reason="Conflict: Email already associated with a manager")
 
-        return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
+        else:
+
+            return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
+
+    except json.JSONDecodeError:
+
+        return HttpResponse(status=400, reason="Bad Request: JSON object expected in POST body")
 
 
 def create_promoter(request):
-    email = request.POST.get("email")
-    password = request.POST.get("password")
+    try:
+        json_data = json.loads(request.body)
 
-    if email and password:
+        email = json_data.get("email")
+        password = json_data.get("password")
 
-        try:
+        if email and password:
 
-            promoter_user = queries.create_promoter_user(email, password)
-            serialized_user = serialize('json',
-                                        PromoterUser.objects.filter(pk=promoter_user.pk),
-                                        fields=('email', 'date_joined'))
-            user_fields = json.loads(serialized_user)[0]["fields"]
+            try:
 
-            return JsonResponse(user_fields, status=201)
+                promoter_user = queries.create_promoter_user(email, password)
+                serialized_user = serialize('json',
+                                            PromoterUser.objects.filter(pk=promoter_user.pk),
+                                            fields=('email', 'date_joined'))
+                user_fields = json.loads(serialized_user)[0]["fields"]
 
-        except queries.FirebaseError:
+                return JsonResponse(user_fields, status=201)
 
-            return HttpResponse(status=503, reason="Internal Server Error: Firebase")
+            except queries.FirebaseError:
 
-        except queries.PromoterExistsError:
+                return HttpResponse(status=503, reason="Internal Server Error: Firebase")
 
-            return HttpResponse(status=409, reason="Conflict: Email already associated with a promoter")
+            except queries.PromoterExistsError:
 
-    else:
+                return HttpResponse(status=409, reason="Conflict: Email already associated with a promoter")
 
-        return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
+        else:
+
+            return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
+
+    except json.JSONDecodeError:
+
+        return HttpResponse(status=400, reason="Bad Request: JSON object expected in POST body")

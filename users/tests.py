@@ -32,7 +32,7 @@ class TestCase(TestCase):
             'gender': gender,
             'country': country,
             'city': city
-        })
+        }, content_type="application/json")
 
         # Asserting the success of the user creation (assuming the user doesn't exist)
         self.assertEqual(response.status_code, 201)
@@ -57,7 +57,7 @@ class TestCase(TestCase):
             'gender': gender,
             'country': country,
             'city': city
-        })
+        }, content_type="application/json")
         self.assertGreaterEqual(response.status_code, 400)
 
         # Removing the user from the firebase DB (as it's not temporary)
@@ -70,7 +70,8 @@ class TestCase(TestCase):
         client = Client()
 
         # Sending request to create a manager
-        response = client.post('/v0/users/managers', {'email': email, 'password': password})
+        response = client.post('/v0/users/managers', {'email': email, 'password': password},
+                               content_type="application/json")
 
         # Asserting the success of the user creation (assuming the user doesn't exist)
         self.assertEqual(response.status_code, 201)
@@ -87,7 +88,8 @@ class TestCase(TestCase):
         firebase_user = FirebaseUser.objects.get(user_id=user_id)
 
         # Assert you can't create another manager user with same email
-        response = client.post('/v0/users/managers', {'email': email, 'password': password})
+        response = client.post('/v0/users/managers', {'email': email, 'password': password},
+                               content_type="application/json")
         self.assertGreaterEqual(response.status_code, 400)
 
         # Removing the user from the firebase DB (as it's not temporary)
@@ -100,7 +102,8 @@ class TestCase(TestCase):
         client = Client()
 
         # Sending request to create a promoter
-        response = client.post('/v0/users/promoters', {'email': email, 'password': password})
+        response = client.post('/v0/users/promoters', {'email': email, 'password': password},
+                               content_type="application/json")
 
         # Asserting the success of the user creation (assuming the user doesn't exist)
         self.assertEqual(response.status_code, 201)
@@ -117,7 +120,8 @@ class TestCase(TestCase):
         firebase_user = FirebaseUser.objects.get(user_id=user_id)
 
         # Assert you can't create another promoter user with same email
-        response = client.post('/v0/users/promoters', {'email': email, 'password': password})
+        response = client.post('/v0/users/promoters', {'email': email, 'password': password},
+                               content_type="application/json")
         self.assertGreaterEqual(response.status_code, 400)
 
         # Removing the user from the firebase DB (as it's not temporary)
@@ -130,7 +134,8 @@ class TestCase(TestCase):
         client = Client()
 
         # Sending request to create a promoter
-        response = client.post('/v0/users/managers', {'email': email, 'password': password})
+        response = client.post('/v0/users/managers', {'email': email, 'password': password},
+                               content_type="application/json")
 
         # Asserting the success of the user creation (assuming the user doesn't exist)
         self.assertEqual(response.status_code, 201)
@@ -147,7 +152,8 @@ class TestCase(TestCase):
         firebase_user = FirebaseUser.objects.get(user_id=user_id)
 
         # Assert you can create a promoter user with same email
-        response = client.post('/v0/users/promoters', {'email': email, 'password': password})
+        response = client.post('/v0/users/promoters', {'email': email, 'password': password},
+                               content_type="application/json")
         self.assertGreaterEqual(response.status_code, 201)
         promoter = PromoterUser.objects.get(email=email)
 
