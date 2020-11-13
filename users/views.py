@@ -43,13 +43,13 @@ def create_apper(request):
     try:
         json_data = json.loads(request.body)
 
-        email = json_data["email"]
-        password = json_data["password"]
-        name = json_data["name"] if "name" in json_data else None
-        date_birth = json_data["date_birth"] if "date_birth" in json_data else None
-        country = json_data["country"] if "country" in json_data else None
-        city = json_data["city"] if "city" in json_data else None
-        gender = json_data["gender"] if "gender" in json_data else None
+        email = json_data.get("email")
+        password = json_data.get("password")
+        name = json_data.get("name", None)
+        date_birth = json_data.get("date_birth", None)
+        country = json_data.get("country", None)
+        city = json_data.get("city", None)
+        gender = json_data.get("gender", None)
 
         if email and password:
 
@@ -86,8 +86,8 @@ def create_manager(request):
     try:
         json_data = json.loads(request.body)
 
-        email = json_data["email"]
-        password = json_data["password"]
+        email = json_data.get("email")
+        password = json_data.get("password")
 
         if email and password:
 
@@ -122,8 +122,8 @@ def create_promoter(request):
     try:
         json_data = json.loads(request.body)
 
-        email = json_data["email"]
-        password = json_data["password"]
+        email = json_data.get("email")
+        password = json_data.get("password")
 
         if email and password:
 
