@@ -9,7 +9,8 @@ class Status(models.IntegerChoices):
 
 
 class Location(models.Model):
-    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(
+        primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.CharField(max_length=255)
     website = models.CharField(max_length=255, null=True)

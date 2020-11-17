@@ -22,7 +22,8 @@ def locations(request):
             status = data.get("status", Status.WAIT)
 
             if not (name and description):
-                raise HttpResponse(status=400, reason="Bad Request: Need name and description")
+                raise HttpResponse(
+                    status=400, reason="Bad Request: Need name and description")
 
             location = {
                 'name': name,
@@ -37,7 +38,8 @@ def locations(request):
             # TODO: Add the social_media to the json return file
             created = queries.create_location(location)
             location_serialize = serializers.serialize("json",
-                                                       Location.objects.filter(pk=created.pk),
+                                                       Location.objects.filter(
+                                                           pk=created.pk),
                                                        fields=[
                                                            'uuid', 'name', 'description', 'website', 'latitude',
                                                            'longitude',
@@ -56,7 +58,7 @@ def locations(request):
             location_serialize = serializers.serialize("json",
                                                        all_location,
                                                        fields=(
-                                                           'name', 'description', 'website', 'latitude', 'longitude',
+                                                           'uuid', 'name', 'description', 'website', 'latitude', 'longitude',
                                                            'image',
                                                            'status'))
             return JsonResponse([i["fields"] for i in json.loads(location_serialize)], safe=False)
@@ -67,19 +69,19 @@ def locations(request):
 
     else:
 
-        raise HttpResponseNotAllowed(['POST', 'GET'])
+        return HttpResponseNotAllowed(['POST', 'GET'])
 
 
 def crud_location(request, uuid):
 
     if request.method == 'GET':
-        HttpResponse('WTF?')
         try:
             get_location = queries.get_location_by_uuid(uuid)
             HttpResponse(get_location)
             if get_location:
                 location_serialize = serializers.serialize("json",
-                                                           Location.objects.filter(pk=get_location.pk),
+                                                           Location.objects.filter(
+                                                               pk=get_location.pk),
                                                            fields=[
                                                                'uuid', 'name', 'description', 'website', 'latitude',
                                                                'longitude',
@@ -108,47 +110,48 @@ def crud_location(request, uuid):
 
     elif request.method == 'PUT':
 
-        #try:
+        try:
 
-        if not Location.objects.filter(pk=uuid):
-            HttpResponse(status=404, reason="No Location found")
+            if not Location.objects.filter(pk=uuid):
+                HttpResponse(status=404, reason="No Location found")
 
-        data = json.loads(request.body)
+            data = json.loads(request.body)
 
-        name = data.get("name", None)
-        description = data.get("description", None)
-        latitude = data.get("latitude", None)
-        longitude = data.get("longitude", None)
-        website = data.get("website", None)
-        social_media = data.get("social_media", None)
-        image = data.get("image", None)
-        status = data.get("status", None)
+            name = data.get("name", None)
+            description = data.get("description", None)
+            latitude = data.get("latitude", None)
+            longitude = data.get("longitude", None)
+            website = data.get("website", None)
+            social_media = data.get("social_media", None)
+            image = data.get("image", None)
+            status = data.get("status", None)
 
-        location = {
-            'uuid': uuid,
-            'name': name,
-            'description': description,
-            'latitude': latitude,
-            'longitude': longitude,
-            'social_media': social_media,
-            'website': website,
-            'image': image,
-            'status': status,
-        }
-        # TODO: Add the social_media to the json return file
-        updated = queries.update_location_by_uuid(uuid, location)
-        location_serialize = serializers.serialize("json",
-                                                   Location.objects.filter(pk=updated.pk),
-                                                   fields=[
-                                                       'uuid', 'name', 'description', 'website', 'latitude',
-                                                       'longitude',
-                                                       'image',
-                                                       'status'])
-        return JsonResponse(json.loads(location_serialize)[0]["fields"])
+            location = {
+                'uuid': uuid,
+                'name': name,
+                'description': description,
+                'latitude': latitude,
+                'longitude': longitude,
+                'social_media': social_media,
+                'website': website,
+                'image': image,
+                'status': status,
+            }
+            # TODO: Add the social_media to the json return file
+            updated = queries.update_location_by_uuid(uuid, location)
+            location_serialize = serializers.serialize("json",
+                                                       Location.objects.filter(
+                                                           pk=updated.pk),
+                                                       fields=[
+                                                           'uuid', 'name', 'description', 'website', 'latitude',
+                                                           'longitude',
+                                                           'image',
+                                                           'status'])
+            return JsonResponse(json.loads(location_serialize)[0]["fields"])
 
-        #except:
+        except:
 
-         #   return HttpResponse(status=400, reason="Bad Request: Couldn't update Locations")
+            return HttpResponse(status=400, reason="Bad Request: Couldn't update Locations")
 
     else:
 
