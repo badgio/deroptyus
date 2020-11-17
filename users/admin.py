@@ -14,18 +14,17 @@ class UserAdmin(UserAdmin):
     list_display = ('id', 'is_staff', 'is_active',)
     list_filter = ('id', 'is_staff', 'is_active',)
     fieldsets = (
-        (None, {'fields': ('id',)}),
+        (None, {'fields': ()}),
         ('Permissions', {'fields': ('is_staff', 'is_active')}),
     )
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('id', 'is_staff', 'is_active')}
+            'fields': ('is_staff', 'is_active')}
          ),
     )
     search_fields = ('id',)
     ordering = ('id',)
-
 
 admin.site.register(User, UserAdmin)
 
