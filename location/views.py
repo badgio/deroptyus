@@ -22,7 +22,7 @@ def locations(request):
             status = data.get("status", Status.WAIT)
 
             if not (name and description):
-                raise HttpResponse(
+                return HttpResponse(
                     status=400, reason="Bad Request: Need name and description")
 
             location = {
@@ -35,17 +35,29 @@ def locations(request):
                 'image': image,
                 'status': status,
             }
-            # TODO: Add the social_media to the json return file
             created = queries.create_location(location)
-            location_serialize = serializers.serialize("json",
-                                                       Location.objects.filter(
-                                                           pk=created.pk),
-                                                       fields=[
-                                                           'uuid', 'name', 'description', 'website', 'latitude',
-                                                           'longitude',
-                                                           'image',
-                                                           'status'])
-            return JsonResponse(json.loads(location_serialize)[0]["fields"])
+            location_serialize = json.loads(serializers.serialize("json",
+                                                                  Location.objects.filter(
+                                                                      pk=created.pk),
+                                                                  fields=[
+                                                                      'uuid', 'name', 'description', 'website', 'latitude',
+                                                                      'longitude',
+                                                                      'image',
+                                                                      'status']))[0]["fields"]
+
+            social_media = queries.get_social_media_id(created.pk)
+
+            if social_media:
+                social_media_serialize = json.loads(serializers.serialize("json",
+                                                                          social_media,
+                                                                          fields=['social_media', 'link']))
+                a = {}
+                for i in range(len(social_media_serialize)):
+                    a[social_media_serialize[i]["fields"]["social_media"]
+                      ] = social_media_serialize[i]["fields"]["link"]
+                location_serialize['social_media'] = a
+
+            return JsonResponse(location_serialize)
 
         except:
 
@@ -61,7 +73,23 @@ def locations(request):
                                                            'uuid', 'name', 'description', 'website', 'latitude', 'longitude',
                                                            'image',
                                                            'status'))
-            return JsonResponse([i["fields"] for i in json.loads(location_serialize)], safe=False)
+
+            to_return = []
+            for i in json.loads(location_serialize):
+                current = i["fields"]
+                social_media = queries.get_social_media_id(i['pk'])
+                if social_media:
+                    social_media_serialize = json.loads(serializers.serialize("json",
+                                                                              social_media,
+                                                                              fields=['social_media', 'link']))
+                    a = {}
+                    for i in range(len(social_media_serialize)):
+                        a[social_media_serialize[i]["fields"]["social_media"]
+                          ] = social_media_serialize[i]["fields"]["link"]
+                    current['social_media'] = a
+                to_return.append(current)
+
+            return JsonResponse(to_return, safe=False)
 
         except:
 
@@ -77,7 +105,7 @@ def crud_location(request, uuid):
     if request.method == 'GET':
         try:
             get_location = queries.get_location_by_uuid(uuid)
-            HttpResponse(get_location)
+            social_media = queries.get_social_media_id(get_location.id)
             if get_location:
                 location_serialize = serializers.serialize("json",
                                                            Location.objects.filter(
@@ -87,10 +115,23 @@ def crud_location(request, uuid):
                                                                'longitude',
                                                                'image',
                                                                'status'])
-                return JsonResponse(json.loads(location_serialize)[0]["fields"])
+                return_json = json.loads(location_serialize)[0]["fields"]
+
+                if social_media:
+                    social_media_serialize = json.loads(serializers.serialize("json",
+                                                                              social_media,
+                                                                              fields=['social_media', 'link']))
+                    a = {}
+                    for i in range(len(social_media_serialize)):
+                        a[social_media_serialize[i]["fields"]["social_media"]
+                          ] = social_media_serialize[i]["fields"]["link"]
+                    return_json['social_media'] = a
+
+                return JsonResponse(return_json)
 
             else:
-                HttpResponse(status=400, reason="Bad request: Error on Get")
+                HttpResponse(
+                    status=400, reason="Bad request: Error on Get")
 
         except:
             HttpResponse(status=400, reason="Bad request: Error on Get")
@@ -112,7 +153,7 @@ def crud_location(request, uuid):
 
         try:
 
-            if not Location.objects.filter(pk=uuid):
+            if not Location.objects.filter(uuid=uuid):
                 HttpResponse(status=404, reason="No Location found")
 
             data = json.loads(request.body)
@@ -137,17 +178,29 @@ def crud_location(request, uuid):
                 'image': image,
                 'status': status,
             }
-            # TODO: Add the social_media to the json return file
             updated = queries.update_location_by_uuid(uuid, location)
-            location_serialize = serializers.serialize("json",
-                                                       Location.objects.filter(
-                                                           pk=updated.pk),
-                                                       fields=[
-                                                           'uuid', 'name', 'description', 'website', 'latitude',
-                                                           'longitude',
-                                                           'image',
-                                                           'status'])
-            return JsonResponse(json.loads(location_serialize)[0]["fields"])
+            location_serialize = json.loads(serializers.serialize("json",
+                                                                  Location.objects.filter(
+                                                                      pk=updated.pk),
+                                                                  fields=[
+                                                                      'uuid', 'name', 'description', 'website', 'latitude',
+                                                                      'longitude',
+                                                                      'image',
+                                                                      'status']))[0]["fields"]
+
+            social_media = queries.get_social_media_id(updated.id)
+
+            if social_media:
+                social_media_serialize = json.loads(serializers.serialize("json",
+                                                                          social_media,
+                                                                          fields=['social_media', 'link']))
+                a = {}
+                for i in range(len(social_media_serialize)):
+                    a[social_media_serialize[i]["fields"]["social_media"]
+                      ] = social_media_serialize[i]["fields"]["link"]
+                location_serialize['social_media'] = a
+
+            return JsonResponse(location_serialize)
 
         except:
 

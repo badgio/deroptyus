@@ -26,7 +26,7 @@ def create_location(location):
 
         for i in location['social_media']:
             social_media_created = SocialMedia()
-            social_media_created.location_id = location_created.uuid
+            social_media_created.location_id = location_created.id
             social_media_created.social_media = i
             social_media_created.link = location['social_media'][i]
             social_media_created.save()
@@ -68,7 +68,7 @@ def update_location_by_uuid(location_uuid, location):
         if location['longitude']:
             location_update.longitude = location['longitude']
         if location['website']:
-            location_update.name = location['website']
+            location_update.website = location['website']
         if location['status']:
             location_update.status = location['status']
 
@@ -81,15 +81,17 @@ def update_location_by_uuid(location_uuid, location):
 
         if location['social_media']:
             for i in location['social_media']:
-                social_media_update = SocialMedia.objects.get(
-                    location_id=location_uuid, social_media=i)
+                social_media_update = SocialMedia.objects.filter(
+                    location_id=location_update.id, social_media=i)
                 if social_media_update:
+                    social_media_update = SocialMedia.objects.get(
+                        location_id=location_update.id, social_media=i)
                     social_media_update.social_media = i
                     social_media_update.link = location['social_media'][i]
                     social_media_update.save()
                 else:
                     social_media_created = SocialMedia()
-                    social_media_created.location_id = location_uuid
+                    social_media_created.location_id = location_update.id
                     social_media_created.social_media = i
                     social_media_created.link = location['social_media'][i]
                     social_media_created.save()
@@ -101,10 +103,14 @@ def update_location_by_uuid(location_uuid, location):
         raise ErrorUpdate('Error updating')
 
 
+def get_social_media_id(id):
+
+    return SocialMedia.objects.filter(location_id=id)
+
+
 class ErrorCreate (Exception):
     pass
 
 
 class ErrorUpdate (Exception):
     pass
-
