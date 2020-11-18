@@ -1,4 +1,4 @@
-from django.http import *
+from django.http import JsonResponse, HttpResponse
 from . import queries
 from .models import Location, Status
 from django.core import serializers
@@ -59,7 +59,7 @@ def locations(request):
 
             return JsonResponse(location_serialize)
 
-        except:
+        except Exception:
 
             return HttpResponse(status=400, reason="Bad Request: Couldn't post Locations")
 
@@ -133,7 +133,7 @@ def crud_location(request, uuid):
                 HttpResponse(
                     status=400, reason="Bad request: Error on Get")
 
-        except:
+        except Exception:
             HttpResponse(status=400, reason="Bad request: Error on Get")
 
     elif request.method == 'DELETE':
@@ -146,7 +146,7 @@ def crud_location(request, uuid):
             else:
                 return HttpResponse(status=400, reason="Bad request: Error on delete")
 
-        except:
+        except Exception:
             HttpResponse(status=400, reason="Bad request: Error on Delete")
 
     elif request.method == 'PUT':
@@ -202,7 +202,7 @@ def crud_location(request, uuid):
 
             return JsonResponse(location_serialize)
 
-        except:
+        except Exception:
 
             return HttpResponse(status=400, reason="Bad Request: Couldn't update Locations")
 

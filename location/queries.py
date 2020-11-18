@@ -33,7 +33,7 @@ def create_location(location):
 
         return location_created
 
-    except:
+    except Exception:
 
         raise ErrorCreate('Error creating')
 
@@ -98,7 +98,7 @@ def update_location_by_uuid(location_uuid, location):
 
         return location_update
 
-    except:
+    except Exception:
 
         raise ErrorUpdate('Error updating')
 
