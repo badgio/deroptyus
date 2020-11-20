@@ -9,7 +9,7 @@ from .models import AppUser, PromoterUser, ManagerUser
 
 # Create your views here.
 
-## Views
+# Views
 
 def appers(request):
     if request.method == 'POST':
@@ -41,7 +41,7 @@ def promoters(request):
         return HttpResponse(status=405, reason=f"Method Not Allowed: {request.method} not supported")
 
 
-## Auxiliary functions for the Views
+# Auxiliary functions for the Views
 
 def create_apper(request):
     try:

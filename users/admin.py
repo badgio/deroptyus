@@ -26,6 +26,7 @@ class UserAdmin(UserAdmin):
     search_fields = ('id',)
     ordering = ('id',)
 
+
 admin.site.register(User, UserAdmin)
 
 admin.site.register(AppUser)

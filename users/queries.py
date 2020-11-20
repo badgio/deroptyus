@@ -1,7 +1,7 @@
-from firebase.auth import FirebaseBackend
-from firebase.models import FirebaseUser
 from django.contrib.auth.models import Group
 
+from firebase.auth import FirebaseBackend
+from firebase.models import FirebaseUser
 from .models import User, AppUser, PromoterUser, ManagerUser
 
 firebase_backend = FirebaseBackend()
@@ -70,7 +70,6 @@ def create_app_user(email, password, name, date_birth, country, city, gender):
         except Exception:
 
             raise PermissionGroupError("Couldn't get the AppUser's Permission Group")
-
 
     return app_user
 
@@ -151,6 +150,7 @@ class PromoterExistsError(Exception):
 
 class FirebaseError(Exception):
     pass
+
 
 class PermissionGroupError(Exception):
     pass
