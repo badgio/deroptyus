@@ -9,6 +9,8 @@ from .models import AppUser, PromoterUser, ManagerUser
 
 # Create your views here.
 
+# Views
+
 def appers(request):
     if request.method == 'POST':
 
@@ -38,6 +40,8 @@ def promoters(request):
 
         return HttpResponse(status=405, reason=f"Method Not Allowed: {request.method} not supported")
 
+
+# Auxiliary functions for the Views
 
 def create_apper(request):
     try:
@@ -72,6 +76,10 @@ def create_apper(request):
             except queries.AppUserExistsError:
 
                 return HttpResponse(status=409, reason="Conflict: Email already associated with an app user")
+
+            except queries.PermissionGroupError:
+
+                return HttpResponse(status=503, reason="Internal Server Error: Permission Groups not set")
 
         else:
 
@@ -109,6 +117,10 @@ def create_manager(request):
 
                 return HttpResponse(status=409, reason="Conflict: Email already associated with a manager")
 
+            except queries.PermissionGroupError:
+
+                return HttpResponse(status=503, reason="Internal Server Error: Permission Groups not set")
+
         else:
 
             return HttpResponse(status=400, reason="Bad Request: Email and Password must be provided")
@@ -144,6 +156,10 @@ def create_promoter(request):
             except queries.PromoterExistsError:
 
                 return HttpResponse(status=409, reason="Conflict: Email already associated with a promoter")
+
+            except queries.PermissionGroupError:
+
+                return HttpResponse(status=503, reason="Internal Server Error: Permission Groups not set")
 
         else:
 

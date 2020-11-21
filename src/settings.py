@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'users',
     'firebase',
+    'groupadmin_users',
 ]
 
 MIDDLEWARE = [
@@ -106,25 +107,14 @@ AUTH_PASSWORD_VALIDATORS = [
     # },
 ]
 
+# Default User model
 AUTH_USER_MODEL = 'users.User'
+
+# Authentication Backends
 AUTHENTICATION_BACKENDS = ['django.contrib.auth.backends.ModelBackend',
                            'firebase.auth.FirebaseBackend']
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.1/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
 # Firebase Authentication API Key
-
 FIREBASE_API_KEY = {
 
     "type": os.environ.get('FIREBASE_TYPE'),
@@ -139,6 +129,19 @@ FIREBASE_API_KEY = {
     "client_x509_cert_url": os.environ.get('FIREBASE_CLIENT_CERT_URL')
 
 }
+
+# Internationalization
+# https://docs.djangoproject.com/en/3.1/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_L10N = True
+
+USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/

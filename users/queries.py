@@ -1,3 +1,5 @@
+from django.contrib.auth.models import Group
+
 from firebase.auth import FirebaseBackend
 from firebase.models import FirebaseUser
 from .models import User, AppUser, PromoterUser, ManagerUser
@@ -59,6 +61,15 @@ def create_app_user(email, password, name, date_birth, country, city, gender):
         app_user.save()
 
         # Set the App User permissions
+        try:
+
+            appers_group = Group.objects.get(name='appers_permission_group')
+
+            user.groups.add(appers_group)
+
+        except Exception:
+
+            raise PermissionGroupError("Couldn't get the AppUser's Permission Group")
 
     return app_user
 
@@ -81,6 +92,15 @@ def create_manager_user(email, password):
         manager_user.save()
 
         # Set the Manager User permissions
+        try:
+
+            managers_group = Group.objects.get(name='managers_permission_group')
+
+            user.groups.add(managers_group)
+
+        except Exception:
+
+            raise PermissionGroupError("Couldn't get the ManagerUser's Permission Group")
 
     return manager_user
 
@@ -103,6 +123,15 @@ def create_promoter_user(email, password):
         promoter_user.save()
 
         # Set the Promoter User permissions
+        try:
+
+            promoters_group = Group.objects.get(name='promoters_permission_group')
+
+            user.groups.add(promoters_group)
+
+        except Exception:
+
+            raise PermissionGroupError("Couldn't get the PromoterUser's Permission Group")
 
     return promoter_user
 
@@ -111,13 +140,17 @@ class AppUserExistsError(Exception):
     pass
 
 
-class FirebaseError(Exception):
-    pass
-
-
 class ManagerExistsError(Exception):
     pass
 
 
 class PromoterExistsError(Exception):
+    pass
+
+
+class FirebaseError(Exception):
+    pass
+
+
+class PermissionGroupError(Exception):
     pass
