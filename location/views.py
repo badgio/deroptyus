@@ -1,4 +1,4 @@
-from django.http import JsonResponse, HttpResponse
+from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from . import queries
 from .models import Location, Status
 from django.core import serializers
@@ -184,7 +184,7 @@ def crud_location(request, uuid):
             }
             updated = queries.update_location_by_uuid(uuid, location)
             location_serialize = json.loads(serializers.serialize("json",
-                                                                  update,
+                                                                  updated,
                                                                   fields=[
                                                                       'uuid', 'name',
                                                                       'description', 'website',
