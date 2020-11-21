@@ -1,4 +1,4 @@
-from .models import Location, Status, SocialMedia
+from .models import Location, SocialMedia
 from base64 import b64decode
 from django.core.files.base import ContentFile
 

@@ -6,4 +6,3 @@ urlpatterns = [
     path('<uuid>', views.crud_location),
     path('', views.locations),
 ]
-

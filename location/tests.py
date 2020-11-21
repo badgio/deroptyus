@@ -7,7 +7,7 @@ class LocationTestCase(TestCase):
 
     def test_app_location_get_all(self):
         """
-        Test: Get all locations 
+        Test: Get all locations
         Path: /v0/locations/
         """
         client = Client()

@@ -37,7 +37,7 @@ def locations(request):
             }
             created = queries.create_location(location)
             location_serialize = json.loads(serializers.serialize("json",
-                                                                  created
+                                                                  created,
                                                                   fields=[
                                                                       'uuid', 'name',
                                                                       'description', 'website',
