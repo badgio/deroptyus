@@ -16,7 +16,7 @@ def create_location(location):
         location_created.status = location["status"]
 
         if location["image"]:
-            image_name = location_created.name + ".jpg"
+            image_name = location_created.uuid
             image_data = b64decode(location["image"])
             location_created.image = ContentFile(image_data, image_name)
         else:
@@ -73,7 +73,7 @@ def update_location_by_uuid(location_uuid, location):
             location_update.status = location['status']
 
         if location["image"]:
-            image_name = location_update.name + ".jpg"
+            image_name = location_update.name
             image_data = b64decode(location["image"])
             location_update.image = ContentFile(image_data, image_name)
 
@@ -103,7 +103,7 @@ def update_location_by_uuid(location_uuid, location):
         raise ErrorUpdate('Error updating')
 
 
-def get_social_media_id(id):
+def get_social_media_by_id(id):
 
     return SocialMedia.objects.filter(location_id=id)
 

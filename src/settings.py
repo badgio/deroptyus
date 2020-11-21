@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'authentication',
     'location',
     'badge'
     'users',
@@ -59,14 +58,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'src.urls'
 
-GRAPHENE = {
-    'SCHEMA': 'app.schema.schema'  # Where your Graphene schema lives
-}
-
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

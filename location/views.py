@@ -37,20 +37,21 @@ def locations(request):
             }
             created = queries.create_location(location)
             location_serialize = json.loads(serializers.serialize("json",
-                                                                  Location.objects.filter(
-                                                                      pk=created.pk),
+                                                                  created
                                                                   fields=[
-                                                                      'uuid', 'name', 'description', 'website', 'latitude',
-                                                                      'longitude',
+                                                                      'uuid', 'name',
+                                                                      'description', 'website',
+                                                                      'latitude', 'longitude',
                                                                       'image',
                                                                       'status']))[0]["fields"]
 
-            social_media = queries.get_social_media_id(created.pk)
+            social_media = queries.get_social_media_by_id(created.pk)
 
             if social_media:
                 social_media_serialize = json.loads(serializers.serialize("json",
                                                                           social_media,
-                                                                          fields=['social_media', 'link']))
+                                                                          fields=['social_media',
+                                                                                  'link']))
                 a = {}
                 for i in range(len(social_media_serialize)):
                     a[social_media_serialize[i]["fields"]["social_media"]
@@ -70,18 +71,21 @@ def locations(request):
             location_serialize = serializers.serialize("json",
                                                        all_location,
                                                        fields=(
-                                                           'uuid', 'name', 'description', 'website', 'latitude', 'longitude',
+                                                           'uuid', 'name',
+                                                           'description', 'website',
+                                                           'latitude', 'longitude',
                                                            'image',
                                                            'status'))
 
             to_return = []
             for i in json.loads(location_serialize):
                 current = i["fields"]
-                social_media = queries.get_social_media_id(i['pk'])
+                social_media = queries.get_social_media_by_id(i['pk'])
                 if social_media:
                     social_media_serialize = json.loads(serializers.serialize("json",
                                                                               social_media,
-                                                                              fields=['social_media', 'link']))
+                                                                              fields=['social_media',
+                                                                                      'link']))
                     a = {}
                     for i in range(len(social_media_serialize)):
                         a[social_media_serialize[i]["fields"]["social_media"]
@@ -91,7 +95,7 @@ def locations(request):
 
             return JsonResponse(to_return, safe=False)
 
-        except:
+        except Exception:
 
             return HttpResponse(status=400, reason="Bad Request: Couldn't get Locations")
 
@@ -105,22 +109,22 @@ def crud_location(request, uuid):
     if request.method == 'GET':
         try:
             get_location = queries.get_location_by_uuid(uuid)
-            social_media = queries.get_social_media_id(get_location.id)
+            social_media = queries.get_social_media_by_id(get_location.id)
             if get_location:
                 location_serialize = serializers.serialize("json",
-                                                           Location.objects.filter(
-                                                               pk=get_location.pk),
+                                                           get_location,
                                                            fields=[
-                                                               'uuid', 'name', 'description', 'website', 'latitude',
-                                                               'longitude',
-                                                               'image',
-                                                               'status'])
+                                                               'uuid', 'name',
+                                                               'description', 'website',
+                                                               'latitude', 'longitude',
+                                                               'image', 'status'])
                 return_json = json.loads(location_serialize)[0]["fields"]
 
                 if social_media:
                     social_media_serialize = json.loads(serializers.serialize("json",
                                                                               social_media,
-                                                                              fields=['social_media', 'link']))
+                                                                              fields=['social_media',
+                                                                                      'link']))
                     a = {}
                     for i in range(len(social_media_serialize)):
                         a[social_media_serialize[i]["fields"]["social_media"]
@@ -180,20 +184,21 @@ def crud_location(request, uuid):
             }
             updated = queries.update_location_by_uuid(uuid, location)
             location_serialize = json.loads(serializers.serialize("json",
-                                                                  Location.objects.filter(
-                                                                      pk=updated.pk),
+                                                                  update,
                                                                   fields=[
-                                                                      'uuid', 'name', 'description', 'website', 'latitude',
-                                                                      'longitude',
+                                                                      'uuid', 'name',
+                                                                      'description', 'website',
+                                                                      'latitude', 'longitude',
                                                                       'image',
                                                                       'status']))[0]["fields"]
 
-            social_media = queries.get_social_media_id(updated.id)
+            social_media = queries.get_social_media_by_id(updated.id)
 
             if social_media:
                 social_media_serialize = json.loads(serializers.serialize("json",
                                                                           social_media,
-                                                                          fields=['social_media', 'link']))
+                                                                          fields=['social_media',
+                                                                                  'link']))
                 a = {}
                 for i in range(len(social_media_serialize)):
                     a[social_media_serialize[i]["fields"]["social_media"]
