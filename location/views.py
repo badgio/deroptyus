@@ -152,7 +152,7 @@ def crud_location(request, uuid):
         except Exception:
             HttpResponse(status=400, reason="Bad request: Error on Delete")
 
-    elif request.method == 'PUT':
+    elif request.method == 'PATCH':
 
         try:
 
@@ -181,7 +181,7 @@ def crud_location(request, uuid):
                 'image': image,
                 'status': status,
             }
-            updated = queries.update_location_by_uuid(uuid, location)
+            updated = queries.patch_location_by_uuid(uuid, location)
             location_serialize = json.loads(serializers.serialize("json",
                                                                   [updated],
                                                                   fields=[
@@ -212,4 +212,4 @@ def crud_location(request, uuid):
 
     else:
 
-        return HttpResponseNotAllowed(['PUT', 'DELETE', 'GET'])
+        return HttpResponseNotAllowed(['PATCH', 'DELETE', 'GET'])

@@ -53,7 +53,7 @@ def delete_location_by_uuid(location_uuid):
     return Location.objects.filter(uuid=location_uuid).delete()
 
 
-def update_location_by_uuid(location_uuid, location):
+def patch_location_by_uuid(location_uuid, location):
 
     try:
 

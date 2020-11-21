@@ -80,7 +80,7 @@ class LocationTestCase(TestCase):
         # Asserting the success of retrieving a location
         self.assertEqual(response.status_code, 200)
 
-    def test_app_location_update_with_uuid(self):
+    def test_app_location_patch_with_uuid(self):
         """
         Test: Create a new location
         Path: /v0/locations/
@@ -110,7 +110,7 @@ class LocationTestCase(TestCase):
 
         # Sending request to update a Location
         a = json.loads(response.content)['uuid']
-        response = client.put(f'/v0/locations/{a}', {
+        response = client.patch(f'/v0/locations/{a}', {
             'name': "New name",
             'description': "New description",
             'latitude': 1,
