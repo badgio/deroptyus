@@ -71,7 +71,10 @@ def locations(request):
             location_serialize = serializers.serialize("json",
                                                        all_location,
                                                        fields=(
-                                                           'uuid', 'name', 'description', 'website',  'latitude', 'longitude', 'image', 'status'))
+                                                           'uuid', 'name',
+                                                           'description', 'website',
+                                                           'latitude', 'longitude',
+                                                           'image', 'status'))
 
             to_return = []
             for i in json.loads(location_serialize):
