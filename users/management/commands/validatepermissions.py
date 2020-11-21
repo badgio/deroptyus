@@ -30,6 +30,9 @@ class Command(BaseCommand):
             'delete_appuser'
         ]
 
+        # Clearing previous permissions
+        appers_group.permissions.clear()
+
         # Adding Permissions to Group
         for permission in Permission.objects.filter(codename__in=appers_permission_codenames):
             appers_group.permissions.add(permission)
@@ -48,9 +51,15 @@ class Command(BaseCommand):
         managers_permission_codenames = [
             'change_manageruser',
             'view_manageruser',
-            'delete_manageruser'
+            'delete_manageruser',
+            'add_location',
+            'change_location',
+            'view_location',
+            'delete_location',
         ]
 
+        # Clearing previous permissions
+        managers_group.permissions.clear()
         # Adding Permissions to Group
         for permission in Permission.objects.filter(codename__in=managers_permission_codenames):
             managers_group.permissions.add(permission)
@@ -72,6 +81,8 @@ class Command(BaseCommand):
             'delete_promoteruser'
         ]
 
+        # Clearing previous permissions
+        promoters_group.permissions.clear()
         # Adding Permissions to Group
         for permission in Permission.objects.filter(codename__in=promoters_permission_codenames):
             promoters_group.permissions.add(permission)

@@ -211,7 +211,11 @@ class UsersTestCase(TestCase):
         managers_permission_codenames = [
             'change_manageruser',
             'view_manageruser',
-            'delete_manageruser'
+            'delete_manageruser',
+            'add_location',
+            'change_location',
+            'view_location',
+            'delete_location'
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=managers_permission_codenames).all(),
                             managers_group.permissions.all())
