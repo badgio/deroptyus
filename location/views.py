@@ -37,7 +37,7 @@ def locations(request):
             }
             created = queries.create_location(location)
             location_serialize = json.loads(serializers.serialize("json",
-                                                                  created,
+                                                                  [created],
                                                                   fields=[
                                                                       'uuid', 'name',
                                                                       'description', 'website',
@@ -71,11 +71,7 @@ def locations(request):
             location_serialize = serializers.serialize("json",
                                                        all_location,
                                                        fields=(
-                                                           'uuid', 'name',
-                                                           'description', 'website',
-                                                           'latitude', 'longitude',
-                                                           'image',
-                                                           'status'))
+                                                           'uuid', 'name', 'description', 'website',  'latitude', 'longitude', 'image', 'status'))
 
             to_return = []
             for i in json.loads(location_serialize):
@@ -112,7 +108,7 @@ def crud_location(request, uuid):
             social_media = queries.get_social_media_by_id(get_location.id)
             if get_location:
                 location_serialize = serializers.serialize("json",
-                                                           get_location,
+                                                           [get_location],
                                                            fields=[
                                                                'uuid', 'name',
                                                                'description', 'website',
@@ -184,7 +180,7 @@ def crud_location(request, uuid):
             }
             updated = queries.update_location_by_uuid(uuid, location)
             location_serialize = json.loads(serializers.serialize("json",
-                                                                  updated,
+                                                                  [updated],
                                                                   fields=[
                                                                       'uuid', 'name',
                                                                       'description', 'website',

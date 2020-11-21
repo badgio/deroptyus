@@ -31,7 +31,7 @@ class LocationTestCase(TestCase):
 
         client = Client()
 
-        # Sending request to create an app user
+        # Sending request to create a Location
         response = client.post('/v0/locations/', {
             'name': name,
             'description': description,
@@ -43,7 +43,7 @@ class LocationTestCase(TestCase):
             'status': status
         }, content_type="application/json")
 
-        # Asserting the success of the user creation (assuming the user doesn't exist)
+        # Asserting the success of the location creation
         self.assertEqual(response.status_code, 200)
 
     def test_app_location_get_with_uuid(self):
@@ -62,7 +62,7 @@ class LocationTestCase(TestCase):
 
         client = Client()
 
-        # Sending request to create an app user
+        # Sending request to create a Location
         response = client.post('/v0/locations/', {
             'name': name,
             'description': description,
@@ -74,9 +74,10 @@ class LocationTestCase(TestCase):
             'status': status
         }, content_type="application/json")
 
-        # Asserting the success of the user creation (assuming the user doesn't exist)
         a = json.loads(response.content)['uuid']
         response = client.get(f'/v0/locations/{a}')
+
+        # Asserting the success of retrieving a location
         self.assertEqual(response.status_code, 200)
 
     def test_app_location_update_with_uuid(self):
@@ -95,7 +96,7 @@ class LocationTestCase(TestCase):
 
         client = Client()
 
-        # Sending request to create an app user
+        # Sending request to create a Location
         response = client.post('/v0/locations/', {
             'name': name,
             'description': description,
@@ -107,7 +108,7 @@ class LocationTestCase(TestCase):
             'status': status
         }, content_type="application/json")
 
-        # Asserting the success of the user creation (assuming the user doesn't exist)
+        # Sending request to update a Location
         a = json.loads(response.content)['uuid']
         response = client.put(f'/v0/locations/{a}', {
             'name': "New name",
@@ -117,6 +118,8 @@ class LocationTestCase(TestCase):
             'website': "www.google.com",
             'status': Status.REJECT
         }, content_type="application/json")
+
+        # Asserting the success of the location update
         self.assertEqual(response.status_code, 200)
 
     def test_app_location_delete_with_uuid(self):
@@ -135,7 +138,7 @@ class LocationTestCase(TestCase):
 
         client = Client()
 
-        # Sending request to create an app user
+        # Sending request to create a Location
         response = client.post('/v0/locations/', {
             'name': name,
             'description': description,
@@ -147,7 +150,8 @@ class LocationTestCase(TestCase):
             'status': status
         }, content_type="application/json")
 
-        # Asserting the success of the user creation (assuming the user doesn't exist)
         a = json.loads(response.content)['uuid']
         response = client.delete(f'/v0/locations/{a}')
+
+        # Asserting the success of the deleting a location
         self.assertEqual(response.status_code, 200)
