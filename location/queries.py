@@ -66,7 +66,7 @@ def delete_location_by_uuid(location_uuid):
 
 
 def patch_location_by_uuid(location_update, location):
-    try:
+    #try:
 
         if location['name']:
             location_update.name = location['name']
@@ -107,9 +107,9 @@ def patch_location_by_uuid(location_update, location):
 
         return location_update
 
-    except Exception as e:
+    #except Exception as e:
 
-        raise ErrorCreate('Error Updating:' + e)
+        #raise ErrorCreate(f'Error Updating: {e}')
 
 
 def get_social_media_by_id(id):

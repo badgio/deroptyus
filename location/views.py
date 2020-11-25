@@ -186,7 +186,7 @@ def crud_location(request, uuid):
 
             data = json.loads(request.body)
 
-            location = {
+            patch_location = {
                 'uuid': uuid,
                 'name': data.get("name"),
                 'description': data.get("description"),
@@ -197,7 +197,7 @@ def crud_location(request, uuid):
                 'image': data.get("image"),
                 'status': data.get("status")
             }
-            updated = queries.patch_location_by_uuid(uuid, location)
+            updated = queries.patch_location_by_uuid(location, patch_location)
             location_serialize = queries.serialize_json_location([updated])[0]["fields"]
 
             social_media = queries.get_social_media_by_id(updated.id)
@@ -216,9 +216,9 @@ def crud_location(request, uuid):
 
             return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
 
-        except Exception as e:
+        #except Exception as e:
 
-            return HttpResponse(status=400, reason=f"Bad Request: Couldn't update Locations {e}")
+            #return HttpResponse(status=400, reason=f"Bad Request: Couldn't update Locations {e}")
 
     else:
 
