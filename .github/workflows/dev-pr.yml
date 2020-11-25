@@ -38,11 +38,13 @@ jobs:
         env:
           FIREBASE_PRIVATE_KEY: "${{ secrets.FIREBASE_PRIVATE_KEY }}"
           FIREBASE_PRIVATE_KEY_ID: "${{ secrets.FIREBASE_PRIVATE_KEY_ID }}"
+          PYREBASE_API_KEY: "${{ secrets.PYREBASE_API_KEY }}"
       - name: Run test suite
-        run: python manage.py test
+        run: python manage.py test -v 2
         env:
           FIREBASE_PRIVATE_KEY: "${{ secrets.FIREBASE_PRIVATE_KEY }}"
           FIREBASE_PRIVATE_KEY_ID: "${{ secrets.FIREBASE_PRIVATE_KEY_ID }}"
+          PYREBASE_API_KEY: "${{ secrets.PYREBASE_API_KEY }}"
 
   static:
     name: Static analysis
