@@ -60,7 +60,7 @@ def locations(request):
         else:
 
             return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission required to add a location")
+                    reason="Forbidden: Current user does not have the permission required to add a location")
 
     elif request.method == 'GET':
 
@@ -93,7 +93,7 @@ def locations(request):
         else:
 
             return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission required to view locations")
+                    reason="Forbidden: Current user does not have the permission required to view locations")
 
     else:
 
@@ -131,7 +131,7 @@ def crud_location(request, uuid):
         else:
 
             return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission required to view this location")
+                    reason="Forbidden: Current user does not have the permission required to view this location")
 
     elif request.method == 'DELETE':
 
@@ -156,7 +156,7 @@ def crud_location(request, uuid):
         except (ManagerLocation.DoesNotExist, ManagerUser.DoesNotExist):
 
             return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission required to delete this location")
+                    reason="Forbidden: Current user does not have the permission required to delete this location")
 
         except Location.DoesNotExist:
 
@@ -206,7 +206,7 @@ def crud_location(request, uuid):
         except (ManagerLocation.DoesNotExist, ManagerUser.DoesNotExist):
 
             return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission required to patch this location")
+                    reason="Forbidden: Current user does not have the permission required to patch this location")
 
         except Location.DoesNotExist:
 
