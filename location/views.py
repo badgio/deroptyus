@@ -1,7 +1,6 @@
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from . import queries
 from .models import Location, Status
-from django.core import serializers
 from base64 import b64encode
 import json
 
@@ -32,7 +31,8 @@ def locations(request):
 
             created = queries.create_location(location)
             location_serialize = queries.serialize_json_location([queries.create_location(location)])[0]["fields"]
-            location_serialize['social_media'] = queries.serialize_social_media(queries.get_social_media_by_id(created.pk))
+            location_serialize['social_media'] = queries.serialize_social_media(
+                                                                            queries.get_social_media_by_id(created.pk))
 
             return JsonResponse(location_serialize)
 
