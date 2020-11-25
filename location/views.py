@@ -216,9 +216,9 @@ def crud_location(request, uuid):
 
             return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
 
-        #except Exception as e:
+        except Exception as e:
 
-            #return HttpResponse(status=400, reason=f"Bad Request: Couldn't update Locations {e}")
+            return HttpResponse(status=400, reason=f"Bad Request: Couldn't update Locations {e}")
 
     else:
 
