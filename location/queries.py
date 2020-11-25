@@ -4,7 +4,7 @@ from base64 import b64decode
 from django.core import serializers
 from django.core.files.base import ContentFile
 
-from .models import Location, SocialMedia, ManagerLocation
+from .models import Location, SocialMedia
 
 
 def create_location(location, manager):
@@ -26,11 +26,8 @@ def create_location(location, manager):
         else:
             location_created.image = None
 
+        location_created.manager = manager
         location_created.save()
-
-        # Linking the Location to a User
-        manager_location = ManagerLocation(manager=manager, location=location_created)
-        manager_location.save()
 
         # Creating Social Media for a Location
 
@@ -58,11 +55,7 @@ def get_location_by_uuid(location_uuid):
 
 
 def delete_location_by_uuid(location_uuid):
-    location = Location.objects.get(uuid=location_uuid)
-
-    ManagerLocation.objects.get(location=location).delete()
-
-    return location.delete()
+    return Location.objects.get(uuid=location_uuid).delete()
 
 
 def patch_location_by_uuid(location_update, location):

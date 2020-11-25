@@ -7,7 +7,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from firebase.auth import InvalidIdToken, NoTokenProvided
 from users.models import ManagerUser
 from . import queries
-from .models import Location, ManagerLocation, Status
+from .models import Location, Status
 
 
 def locations(request):
@@ -142,25 +142,17 @@ def crud_location(request, uuid):
 
             location = queries.get_location_by_uuid(uuid)
 
-            # Creating a backdoor so admins can delete managers' locations
-            if not user.is_superuser:
-                # Checking if it's a manager that's deleting the location
-                manager = ManagerUser.objects.get(user_id=user)
-
-                # Checking if the manager owns the location
-                ManagerLocation.objects.get(manager=manager, location=location)
+            # Checking if it's admin or the manager that created the location
+            if not user.is_superuser and location.manager.user != user:
+                return HttpResponse(status=403,
+                                    reason="Forbidden: Current user does not have the permission"
+                                           " required to delete this location")
 
             result = queries.delete_location_by_uuid(uuid)
             if result:
                 return HttpResponse(status=200)
             else:
                 return HttpResponse(status=400, reason="Bad request: Failed to delete")
-
-        except (ManagerLocation.DoesNotExist, ManagerUser.DoesNotExist):
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to delete this location")
 
         except Location.DoesNotExist:
 
@@ -176,13 +168,11 @@ def crud_location(request, uuid):
 
             location = queries.get_location_by_uuid(uuid)
 
-            # Creating a backdoor so admins can delete managers' locations
-            if not user.is_superuser:
-                # Checking if it's a manager that's deleting the location
-                manager = ManagerUser.objects.get(user_id=user)
-
-                # Checking if the manager owns the location
-                ManagerLocation.objects.get(manager=manager, location=location)
+            # Checking if it's admin or the manager that created the location
+            if not user.is_superuser and location.manager.user != user:
+                return HttpResponse(status=403,
+                                    reason="Forbidden: Current user does not have the permission"
+                                           " required to delete this location")
 
             data = json.loads(request.body)
 
@@ -205,12 +195,6 @@ def crud_location(request, uuid):
             location_serialize['social_media'] = queries.serialize_social_media(social_media)
 
             return JsonResponse(location_serialize)
-
-        except (ManagerLocation.DoesNotExist, ManagerUser.DoesNotExist):
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to patch this location")
 
         except Location.DoesNotExist:
 

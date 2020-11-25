@@ -21,11 +21,7 @@ class Location(models.Model):
     longitude = models.FloatField(null=True)
     image = models.ImageField(upload_to='upload/', null=True)
     status = models.IntegerField(choices=Status.choices, default=3)
-
-
-class ManagerLocation(models.Model):
-    manager = models.ForeignKey(ManagerUser, on_delete=models.RESTRICT)
-    location = models.ForeignKey(Location, on_delete=models.RESTRICT)
+    manager = models.ForeignKey(ManagerUser, on_delete=models.CASCADE)
 
 
 class SocialMedia(models.Model):
