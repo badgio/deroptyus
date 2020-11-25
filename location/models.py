@@ -19,7 +19,7 @@ class Location(models.Model):
     website = models.CharField(max_length=255, null=True)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
-    image = models.ImageField(null=True)
+    image = models.ImageField(upload_to='upload/', null=True)
     status = models.IntegerField(choices=Status.choices, default=3)
 
 

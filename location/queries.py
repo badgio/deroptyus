@@ -1,7 +1,9 @@
 from .models import Location, SocialMedia, ManagerLocation
 from base64 import b64decode
 from django.core.files.base import ContentFile
+from django.core import serializers
 
+import json
 
 def create_location(location, manager):
 
@@ -17,9 +19,9 @@ def create_location(location, manager):
         location_created.status = location["status"]
 
         if location["image"]:
-            image_name = location_created.uuid
-            image_data = b64decode(location["image"])
-            location_created.image = ContentFile(image_data, image_name)
+            format, imgstr = location["image"].split(';base64,')
+            ext = format.split('/')[-1]
+            location_created.image = ContentFile(b64decode(imgstr), name=str(location_created.uuid) + '.' + ext)
         else:
             location_created.image = None
 
@@ -43,16 +45,14 @@ def create_location(location, manager):
 
     except Exception as e:
 
-        raise ErrorCreate('Error creating:' + e)
+        raise ErrorCreate(f'Error creating: {e}')
 
 
 def get_location():
-
     return Location.objects.all()
 
 
 def get_location_by_uuid(location_uuid):
-
     return Location.objects.get(uuid=location_uuid)
 
 
@@ -65,11 +65,8 @@ def delete_location_by_uuid(location_uuid):
     return location.delete()
 
 
-def patch_location_by_uuid(location_uuid, location):
-
+def patch_location_by_uuid(location_update, location):
     try:
-
-        location_update = Location.objects.get(uuid=location_uuid)
 
         if location['name']:
             location_update.name = location['name']
@@ -116,13 +113,38 @@ def patch_location_by_uuid(location_uuid, location):
 
 
 def get_social_media_by_id(id):
-
     return SocialMedia.objects.filter(location_id=id)
 
 
-class ErrorCreate (Exception):
+def serialize_json_location(location):
+    return json.loads(serializers.serialize("json",
+                                            location,
+                                            fields=[
+                                                'uuid', 'name',
+                                                'description', 'website',
+                                                'latitude', 'longitude',
+                                                'image',
+                                                'status']))
+
+
+def serialize_social_media(social_media):
+    if not social_media:
+        return None
+
+    social_media_serialize = json.loads(serializers.serialize("json",
+                                                              social_media,
+                                                              fields=['social_media',
+                                                                      'link']))
+    a = {}
+    for i in range(len(social_media_serialize)):
+        a[social_media_serialize[i]["fields"]["social_media"]] = social_media_serialize[i]["fields"]["link"]
+
+    return a
+
+
+class ErrorCreate(Exception):
     pass
 
 
-class ErrorUpdate (Exception):
+class ErrorUpdate(Exception):
     pass
