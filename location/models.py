@@ -12,7 +12,7 @@ class Location(models.Model):
     uuid = models.UUIDField(
         unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
-    description = models.CharField(max_length=1024)
+    description = models.TextField()
     website = models.CharField(max_length=255, null=True)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
