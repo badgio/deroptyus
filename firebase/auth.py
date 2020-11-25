@@ -14,28 +14,22 @@ class FirebaseBackend(BaseBackend):
 
         firebase_token = request.META.get("HTTP_AUTHORIZATION")
         if not firebase_token:
-            return None
+            raise NoTokenProvided()
 
         firebase_token = firebase_token.split(" ").pop()
 
         try:
             decoded_token = auth.verify_id_token(firebase_token)
         except Exception:
-            return None
+            raise InvalidIdToken()
 
         if not firebase_token or not decoded_token:
             return None
 
-        try:
-            firebase_id = decoded_token.get("uid")
-        except Exception:
-            return None
+        firebase_id = decoded_token.get("uid")
 
-        try:
-            firebase_user = FirebaseUser.objects.get(firebase_id=firebase_id)
-            user = firebase_user.user
-        except Exception:
-            return None
+        firebase_user = FirebaseUser.objects.get(id=firebase_id)
+        user = firebase_user.user
 
         return user
 
@@ -50,6 +44,14 @@ class FirebaseBackend(BaseBackend):
 
 
 class FirebaseError(Exception):
+    pass
+
+
+class InvalidIdToken(Exception):
+    pass
+
+
+class NoTokenProvided(Exception):
     pass
 
 

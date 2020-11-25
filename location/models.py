@@ -1,5 +1,8 @@
-from django.db import models
 import uuid
+
+from django.db import models
+
+from users.models import ManagerUser
 
 
 class Status(models.IntegerChoices):
@@ -18,6 +21,7 @@ class Location(models.Model):
     longitude = models.FloatField(null=True)
     image = models.ImageField(upload_to='upload/', null=True)
     status = models.IntegerField(choices=Status.choices, default=3)
+    manager = models.ForeignKey(ManagerUser, on_delete=models.CASCADE)
 
 
 class SocialMedia(models.Model):

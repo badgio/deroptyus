@@ -187,9 +187,7 @@ class UsersTestCase(TestCase):
 
         # Making the Group has the correct permissions
         appers_permission_codenames = [
-            'change_appuser',
-            'view_appuser',
-            'delete_appuser'
+            'view_location',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=appers_permission_codenames).all(),
                             appers_group.permissions.all())
@@ -209,13 +207,8 @@ class UsersTestCase(TestCase):
 
         # Making the Group has the correct permissions
         managers_permission_codenames = [
-            'change_manageruser',
-            'view_manageruser',
-            'delete_manageruser',
             'add_location',
-            'change_location',
             'view_location',
-            'delete_location'
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=managers_permission_codenames).all(),
                             managers_group.permissions.all())
@@ -235,9 +228,7 @@ class UsersTestCase(TestCase):
 
         # Making the Group has the correct permissions
         promoters_permission_codenames = [
-            'change_promoteruser',
-            'view_promoteruser',
-            'delete_promoteruser'
+            'view_location',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=promoters_permission_codenames).all(),
                             promoters_group.permissions.all())

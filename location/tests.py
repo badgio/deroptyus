@@ -1,16 +1,43 @@
-from django.test import Client, TestCase
-from location.models import Status
 import json
+
+import pyrebase
+from django.conf import settings
+from django.core.management import call_command
+from django.test import Client, TestCase
+
+from location.models import Status
 
 
 class LocationTestCase(TestCase):
+
+    def login_manager(self):
+        # Making sure the DB has the correct permission groups
+        call_command('validatepermissions')
+
+        email = "manager@test.com"
+        password = "test_password"
+
+        client = Client()
+
+        # Sending request to create an app user
+        response = client.post('/v0/users/managers', {
+            'email': email,
+            'password': password
+        }, content_type="application/json")
+
+        # Asserting the success of the user creation (assuming the user doesn't exist)
+        self.assertEqual(response.status_code, 201)
+
+        # Logging the user in the Firebase Console and returning the token for authentication
+        app = pyrebase.initialize_app(settings.PYREBASE_API_KEY)
+        return app.auth().sign_in_with_email_and_password(email=email, password=password)["idToken"]
 
     def test_app_location_get_all(self):
         """
         Test: Get all locations
         Path: /v0/locations/
         """
-        client = Client()
+        client = Client(HTTP_AUTHORIZATION=self.login_manager())
 
         response = client.get('/v0/locations/')
         self.assertEqual(response.status_code, 200)
@@ -20,6 +47,7 @@ class LocationTestCase(TestCase):
         Test: Create a new location
         Path: /v0/locations/
         """
+
         name = "Bom Jesus"
         description = "Santuário do Bom Jesus do Monte"
         website = "bomjesus.pt"
@@ -29,7 +57,7 @@ class LocationTestCase(TestCase):
         social_media = ""
         status = Status.APPROVE
 
-        client = Client()
+        client = Client(HTTP_AUTHORIZATION=self.login_manager())
 
         # Sending request to create a Location
         response = client.post('/v0/locations/', {
@@ -60,7 +88,7 @@ class LocationTestCase(TestCase):
         social_media = ""
         status = Status.APPROVE
 
-        client = Client()
+        client = Client(HTTP_AUTHORIZATION=self.login_manager())
 
         # Sending request to create a Location
         response = client.post('/v0/locations/', {
@@ -94,7 +122,7 @@ class LocationTestCase(TestCase):
         social_media = ""
         status = Status.APPROVE
 
-        client = Client()
+        client = Client(HTTP_AUTHORIZATION=self.login_manager())
 
         # Sending request to create a Location
         response = client.post('/v0/locations/', {
@@ -136,7 +164,7 @@ class LocationTestCase(TestCase):
         social_media = ""
         status = Status.APPROVE
 
-        client = Client()
+        client = Client(HTTP_AUTHORIZATION=self.login_manager())
 
         # Sending request to create a Location
         response = client.post('/v0/locations/', {

@@ -1,13 +1,15 @@
-from .models import Location, SocialMedia
-from base64 import b64decode
-from django.core.files.base import ContentFile
-from django.core import serializers
-
 import json
+from base64 import b64decode
+
+from django.core import serializers
+from django.core.files.base import ContentFile
+
+from .models import Location, SocialMedia
 
 
-def create_location(location):
+def create_location(location, manager):
     try:
+        # Creating Location
         location_created = Location()
 
         location_created.name = location['name']
@@ -24,20 +26,24 @@ def create_location(location):
         else:
             location_created.image = None
 
+        location_created.manager = manager
         location_created.save()
 
-        for i in location['social_media']:
-            social_media_created = SocialMedia()
-            social_media_created.location_id = location_created.id
-            social_media_created.social_media = i
-            social_media_created.link = location['social_media'][i]
-            social_media_created.save()
+        # Creating Social Media for a Location
+
+        if location['social_media']:
+            for i in location['social_media']:
+                social_media_created = SocialMedia()
+                social_media_created.location_id = location_created.id
+                social_media_created.social_media = i
+                social_media_created.link = location['social_media'][i]
+                social_media_created.save()
 
         return location_created
 
     except Exception as e:
 
-        raise ErrorCreate('Error creating:' + str(e))
+        raise ErrorCreate(f'Error creating: {e}')
 
 
 def get_location():
@@ -49,13 +55,11 @@ def get_location_by_uuid(location_uuid):
 
 
 def delete_location_by_uuid(location_uuid):
-    return Location.objects.filter(uuid=location_uuid).delete()
+    return Location.objects.get(uuid=location_uuid).delete()
 
 
-def patch_location_by_uuid(location_uuid, location):
+def patch_location_by_uuid(location_update, location):
     try:
-
-        location_update = Location.objects.get(uuid=location_uuid)
 
         if location['name']:
             location_update.name = location['name']
@@ -98,7 +102,7 @@ def patch_location_by_uuid(location_uuid, location):
 
     except Exception as e:
 
-        raise ErrorCreate('Error Updating:' + e)
+        raise ErrorCreate(f'Error Updating: {e}')
 
 
 def get_social_media_by_id(id):

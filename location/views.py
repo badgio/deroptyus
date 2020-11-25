@@ -1,68 +1,101 @@
+import json
+from base64 import b64encode
+
+from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
+
+from firebase.auth import InvalidIdToken, NoTokenProvided
+from users.models import ManagerUser
 from . import queries
 from .models import Location, Status
-from base64 import b64encode
-import json
 
 
 def locations(request):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
     if request.method == 'POST':
 
-        try:
-            data = json.loads(request.body)
+        if user.has_perm('location.add_location'):
 
-            name = data.get("name")
-            description = data.get("description")
+            try:
+                data = json.loads(request.body)
 
-            if not (name and description):
-                return HttpResponse(
-                    status=400, reason="Bad Request: Need name and description")
+                name = data.get("name")
+                description = data.get("description")
 
-            location = {
-                'name': name,
-                'description': description,
-                'latitude': data.get("latitude"),
-                'longitude': data.get("longitude"),
-                'social_media': data.get("social_media"),
-                'website': data.get("website"),
-                'image': data.get("image"),
-                'status': data.get("status", Status.WAIT)
-            }
+                if not (name and description):
+                    return HttpResponse(
+                        status=400, reason="Bad Request: Need name and description")
 
-            created = queries.create_location(location)
-            location_serialize = queries.serialize_json_location([queries.create_location(location)])[0]["fields"]
-            location_serialize['social_media'] = queries.serialize_social_media(
-                                                                            queries.get_social_media_by_id(created.pk))
+                location = {
+                    'name': name,
+                    'description': description,
+                    'latitude': data.get("latitude"),
+                    'longitude': data.get("longitude"),
+                    'social_media': data.get("social_media"),
+                    'website': data.get("website"),
+                    'image': data.get("image"),
+                    'status': data.get("status", Status.WAIT)
+                }
 
-            return JsonResponse(location_serialize)
+                # Getting the manager that's creating the location
+                manager = ManagerUser.objects.get(user_id=user)
 
-        except Exception as e:
+                created = queries.create_location(location, manager)
+                location_serialize = queries.serialize_json_location([created])[0]["fields"]
+                location_serialize['social_media'] = queries.serialize_social_media(
+                    queries.get_social_media_by_id(created.pk))
 
-            return HttpResponse(status=400, reason=f"Bad Request: Couldn't post Locations {e}")
+                return JsonResponse(location_serialize)
 
-    if request.method == 'GET':
+            except Exception as e:
 
-        try:
-            all_location = queries.get_location()
-            location_serialize = queries.serialize_json_location(all_location)
+                return HttpResponse(status=400, reason=f"Bad Request: Couldn't post Locations {e}")
 
-            to_return = []
-            for i in location_serialize:
+        else:
 
-                current = i["fields"]
-                current['social_media'] = queries.serialize_social_media(queries.get_social_media_by_id(i['pk']))
+            return HttpResponse(status=403,
+                                reason="Forbidden: Current user does not have the permission"
+                                       " required to add a location")
 
-                if current['image']:
-                    encoder = b64encode(open(current['image'], 'rb').read())
-                    current['image'] = encoder.decode('utf-8')
+    elif request.method == 'GET':
 
-                to_return.append(current)
+        # Possibly needs the permission to see if the location is related to this user
+        if user.has_perm('location.view_location'):
 
-            return JsonResponse(to_return, safe=False)
+            try:
 
-        except Exception as e:
+                all_location = queries.get_location()
+                location_serialize = queries.serialize_json_location(all_location)
 
-            return HttpResponse(status=400, reason=f"Bad Request: Failed get Locations {e}")
+                to_return = []
+                for i in location_serialize:
+
+                    current = i["fields"]
+                    current['social_media'] = queries.serialize_social_media(queries.get_social_media_by_id(i['pk']))
+
+                    if current['image']:
+                        encoder = b64encode(open(current['image'], 'rb').read())
+                        current['image'] = encoder.decode('utf-8')
+
+                    to_return.append(current)
+
+                return JsonResponse(to_return, safe=False)
+
+            except Exception:
+
+                return HttpResponse(status=400, reason="Bad Request: Couldn't get Locations")
+
+        else:
+
+            return HttpResponse(status=403,
+                                reason="Forbidden: Current user does not have the permission"
+                                       " required to view locations")
 
     else:
 
@@ -70,25 +103,50 @@ def locations(request):
 
 
 def crud_location(request, uuid):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
     if request.method == 'GET':
-        try:
-            get_location = queries.get_location_by_uuid(uuid)
-            social_media = queries.get_social_media_by_id(get_location.id)
-            if get_location:
-                location_serialize = queries.serialize_json_location([get_location])[0]["fields"]
-                location_serialize['social_media'] = queries.serialize_social_media(social_media)
 
-                return JsonResponse(location_serialize)
+        if user.has_perm('location.view_location'):
 
-            else:
-                HttpResponse(status=400, reason="Bad request: Error no Location with that UUID")
+            try:
+                get_location = queries.get_location_by_uuid(uuid)
+                social_media = queries.get_social_media_by_id(get_location.id)
+                if get_location:
 
-        except Exception as e:
-            HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
+                    location_serialize = queries.serialize_json_location([get_location])[0]["fields"]
+                    location_serialize['social_media'] = queries.serialize_social_media(social_media)
+
+                    return JsonResponse(location_serialize)
+
+                else:
+                    HttpResponse(status=400, reason="Bad request: Error no Location with that UUID")
+
+            except Exception as e:
+                HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
+
+        else:
+
+            return HttpResponse(status=403,
+                                reason="Forbidden: Current user does not have the permission"
+                                       " required to view this location")
 
     elif request.method == 'DELETE':
 
         try:
+
+            location = queries.get_location_by_uuid(uuid)
+
+            # Checking if it's admin or the manager that created the location
+            if not user.is_superuser and location.manager.user != user:
+                return HttpResponse(status=403,
+                                    reason="Forbidden: Current user does not have the permission"
+                                           " required to delete this location")
 
             result = queries.delete_location_by_uuid(uuid)
             if result:
@@ -96,19 +154,29 @@ def crud_location(request, uuid):
             else:
                 return HttpResponse(status=400, reason="Bad request: Failed to delete")
 
+        except Location.DoesNotExist:
+
+            return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
+
         except Exception as e:
-            HttpResponse(status=400, reason=f"Bad request: Error on Delete {e}")
+
+            return HttpResponse(status=400, reason=f"Bad request: Error on Delete {e}")
 
     elif request.method == 'PATCH':
 
         try:
 
-            if not Location.objects.filter(uuid=uuid):
-                HttpResponse(status=404, reason="No Location found")
+            location = queries.get_location_by_uuid(uuid)
+
+            # Checking if it's admin or the manager that created the location
+            if not user.is_superuser and location.manager.user != user:
+                return HttpResponse(status=403,
+                                    reason="Forbidden: Current user does not have the permission"
+                                           " required to delete this location")
 
             data = json.loads(request.body)
 
-            location = {
+            patch_location = {
                 'uuid': uuid,
                 'name': data.get("name"),
                 'description': data.get("description"),
@@ -119,7 +187,7 @@ def crud_location(request, uuid):
                 'image': data.get("image"),
                 'status': data.get("status")
             }
-            updated = queries.patch_location_by_uuid(uuid, location)
+            updated = queries.patch_location_by_uuid(location, patch_location)
             location_serialize = queries.serialize_json_location([updated])[0]["fields"]
 
             social_media = queries.get_social_media_by_id(updated.id)
@@ -127,6 +195,10 @@ def crud_location(request, uuid):
             location_serialize['social_media'] = queries.serialize_social_media(social_media)
 
             return JsonResponse(location_serialize)
+
+        except Location.DoesNotExist:
+
+            return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
 
         except Exception as e:
 
