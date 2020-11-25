@@ -206,7 +206,6 @@ def crud_location(request, uuid):
 
             return JsonResponse(location_serialize)
 
-
         except (ManagerLocation.DoesNotExist, ManagerUser.DoesNotExist):
 
             return HttpResponse(status=403,
