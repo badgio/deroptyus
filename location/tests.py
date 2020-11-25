@@ -48,8 +48,8 @@ class LocationTestCase(TestCase):
 
     def test_app_location_get_with_uuid(self):
         """
-        Test: Create a new location
-        Path: /v0/locations/
+        Test: Get a location with UUID
+        Path: /v0/locations/uuid
         """
         name = "Bom Jesus"
         description = "Santuário do Bom Jesus do Monte"
@@ -82,8 +82,8 @@ class LocationTestCase(TestCase):
 
     def test_app_location_patch_with_uuid(self):
         """
-        Test: Create a new location
-        Path: /v0/locations/
+        Test: Patch a location with uuid
+        Path: /v0/locations/uuid
         """
         name = "Bom Jesus"
         description = "Santuário do Bom Jesus do Monte"
@@ -124,8 +124,8 @@ class LocationTestCase(TestCase):
 
     def test_app_location_delete_with_uuid(self):
         """
-        Test: Create a new location
-        Path: /v0/locations/
+        Test: Delete a location with uuid
+        Path: /v0/locations/uuid
         """
         name = "Bom Jesus"
         description = "Santuário do Bom Jesus do Monte"

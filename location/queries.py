@@ -35,7 +35,7 @@ def create_location(location):
 
     except Exception:
 
-        raise ErrorCreate('Error creating')
+        raise ErrorCreate('Error creating:' + Exception)
 
 
 def get_location():
@@ -100,7 +100,7 @@ def patch_location_by_uuid(location_uuid, location):
 
     except Exception:
 
-        raise ErrorUpdate('Error updating')
+        raise ErrorCreate('Error Updating:' + Exception)
 
 
 def get_social_media_by_id(id):

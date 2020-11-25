@@ -47,16 +47,7 @@ def locations(request):
 
             social_media = queries.get_social_media_by_id(created.pk)
 
-            if social_media:
-                social_media_serialize = json.loads(serializers.serialize("json",
-                                                                          social_media,
-                                                                          fields=['social_media',
-                                                                                  'link']))
-                a = {}
-                for i in range(len(social_media_serialize)):
-                    a[social_media_serialize[i]["fields"]["social_media"]
-                      ] = social_media_serialize[i]["fields"]["link"]
-                location_serialize['social_media'] = a
+            location_serialize['social_media'] = serialize_social_media(social_media)
 
             return JsonResponse(location_serialize)
 
@@ -193,16 +184,7 @@ def crud_location(request, uuid):
 
             social_media = queries.get_social_media_by_id(updated.id)
 
-            if social_media:
-                social_media_serialize = json.loads(serializers.serialize("json",
-                                                                          social_media,
-                                                                          fields=['social_media',
-                                                                                  'link']))
-                a = {}
-                for i in range(len(social_media_serialize)):
-                    a[social_media_serialize[i]["fields"]["social_media"]
-                      ] = social_media_serialize[i]["fields"]["link"]
-                location_serialize['social_media'] = a
+            location_serialize['social_media'] = serialize_social_media(social_media)
 
             return JsonResponse(location_serialize)
 
@@ -213,3 +195,16 @@ def crud_location(request, uuid):
     else:
 
         return HttpResponseNotAllowed(['PATCH', 'DELETE', 'GET'])
+
+
+def serialize_social_media(social_media):
+
+    if social_media:
+        social_media_serialize = json.loads(serializers.serialize("json",
+                                                                  social_media,
+                                                                  fields=['social_media',
+                                                                          'link']))
+        a = {}
+        for i in range(len(social_media_serialize)):
+            a[social_media_serialize[i]["fields"]["social_media"]
+              ] = social_media_serialize[i]["fields"]["link"]
