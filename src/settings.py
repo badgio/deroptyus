@@ -131,6 +131,20 @@ FIREBASE_API_KEY = {
 
 }
 
+# Pyrebase Authentication API Key (used only for testing)
+PYREBASE_API_KEY = {
+
+    "apiKey": os.environ.get('PYREBASE_API_KEY'),
+    "authDomain": os.environ.get('PYREBASE_AUTH_DOMAIN'),
+    "databaseURL": os.environ.get('PYREBASE_DATABASE_URL'),
+    "projectId": os.environ.get('PYREBASE_PROJECT_ID'),
+    "storageBucket": os.environ.get('PYREBASE_STORAGE_BUCKET'),
+    "messagingSenderId": os.environ.get('PYREBASE_MESSAGING_SENDER_ID'),
+    "appId": os.environ.get('PYREBASE_APP_ID'),
+    "measurementId": os.environ.get('PYREBASE_MEASUREMENT_ID'),
+
+}
+
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
 

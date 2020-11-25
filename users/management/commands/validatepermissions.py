@@ -25,9 +25,7 @@ class Command(BaseCommand):
 
         # Listing every permission that an App User should have
         appers_permission_codenames = [
-            'change_appuser',
-            'view_appuser',
-            'delete_appuser'
+            'view_location',
         ]
 
         # Clearing previous permissions
@@ -49,13 +47,8 @@ class Command(BaseCommand):
 
         # Listing every permission that an Manager should have
         managers_permission_codenames = [
-            'change_manageruser',
-            'view_manageruser',
-            'delete_manageruser',
             'add_location',
-            'change_location',
             'view_location',
-            'delete_location',
         ]
 
         # Clearing previous permissions
@@ -76,9 +69,7 @@ class Command(BaseCommand):
 
         # Listing every permission that an Promoter should have
         promoters_permission_codenames = [
-            'change_promoteruser',
-            'view_promoteruser',
-            'delete_promoteruser'
+            'view_location',
         ]
 
         # Clearing previous permissions

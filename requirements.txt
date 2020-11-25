@@ -33,6 +33,7 @@ pyflakes==2.2.0
 pylint==2.6.0
 pylint-plugin-utils==0.6
 pyparsing==2.4.6
+Pyrebase==3.0.27
 python-dotenv==0.15.0
 pytoml==0.1.21
 pytz==2020.1

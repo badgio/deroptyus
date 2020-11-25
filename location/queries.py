@@ -1,11 +1,12 @@
-from .models import Location, SocialMedia
+from .models import Location, SocialMedia, ManagerLocation
 from base64 import b64decode
 from django.core.files.base import ContentFile
 
 
-def create_location(location):
+def create_location(location, manager):
 
     try:
+        # Creating Location
         location_created = Location()
 
         location_created.name = location['name']
@@ -24,18 +25,25 @@ def create_location(location):
 
         location_created.save()
 
-        for i in location['social_media']:
-            social_media_created = SocialMedia()
-            social_media_created.location_id = location_created.id
-            social_media_created.social_media = i
-            social_media_created.link = location['social_media'][i]
-            social_media_created.save()
+        # Linking the Location to a User
+        manager_location = ManagerLocation(manager=manager, location=location_created)
+        manager_location.save()
+
+        # Creating Social Media for a Location
+
+        if location['social_media']:
+            for i in location['social_media']:
+                social_media_created = SocialMedia()
+                social_media_created.location_id = location_created.id
+                social_media_created.social_media = i
+                social_media_created.link = location['social_media'][i]
+                social_media_created.save()
 
         return location_created
 
-    except Exception:
+    except Exception as e:
 
-        raise ErrorCreate('Error creating:' + Exception)
+        raise ErrorCreate('Error creating:' + e)
 
 
 def get_location():
@@ -50,7 +58,11 @@ def get_location_by_uuid(location_uuid):
 
 def delete_location_by_uuid(location_uuid):
 
-    return Location.objects.filter(uuid=location_uuid).delete()
+    location = Location.objects.get(uuid=location_uuid)
+
+    ManagerLocation.objects.get(location=location).delete()
+
+    return location.delete()
 
 
 def patch_location_by_uuid(location_uuid, location):
@@ -98,9 +110,9 @@ def patch_location_by_uuid(location_uuid, location):
 
         return location_update
 
-    except Exception:
+    except Exception as e:
 
-        raise ErrorCreate('Error Updating:' + Exception)
+        raise ErrorCreate('Error Updating:' + e)
 
 
 def get_social_media_by_id(id):
