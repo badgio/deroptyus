@@ -46,11 +46,14 @@ class FirebaseBackend(BaseBackend):
 class FirebaseError(Exception):
     pass
 
+
 class InvalidIdToken(Exception):
     pass
 
+
 class NoTokenProvided(Exception):
     pass
+
 
 class NoEntryForUser(Exception):
     pass

@@ -1,17 +1,16 @@
 import json
+from base64 import b64encode
 
 from django.contrib.auth import authenticate
-from django.core import serializers
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided
 from users.models import ManagerUser
 from . import queries
 from .models import Location, ManagerLocation, Status
-from base64 import b64encode
+
 
 def locations(request):
-
     # Authenticating user
     try:
         user = authenticate(request)
@@ -28,7 +27,7 @@ def locations(request):
 
                 name = data.get("name")
                 description = data.get("description")
-                
+
                 if not (name and description):
                     return HttpResponse(
                         status=400, reason="Bad Request: Need name and description")
@@ -50,7 +49,7 @@ def locations(request):
                 created = queries.create_location(location, manager)
                 location_serialize = queries.serialize_json_location([created])[0]["fields"]
                 location_serialize['social_media'] = queries.serialize_social_media(
-                                                                                queries.get_social_media_by_id(created.pk))
+                    queries.get_social_media_by_id(created.pk))
 
                 return JsonResponse(location_serialize)
 
@@ -69,7 +68,7 @@ def locations(request):
         if user.has_perm('location.view_location'):
 
             try:
-                
+
                 all_location = queries.get_location()
                 location_serialize = queries.serialize_json_location(all_location)
 
@@ -100,8 +99,8 @@ def locations(request):
 
         return HttpResponseNotAllowed(['POST', 'GET'])
 
-def crud_location(request, uuid):
 
+def crud_location(request, uuid):
     # Authenticating user
     try:
         user = authenticate(request)
@@ -142,7 +141,6 @@ def crud_location(request, uuid):
 
             # Creating a backdoor so admins can delete managers' locations
             if not user.is_superuser:
-
                 # Checking if it's a manager that's deleting the location
                 manager = ManagerUser.objects.get(user_id=user)
 
@@ -176,12 +174,11 @@ def crud_location(request, uuid):
 
             # Creating a backdoor so admins can delete managers' locations
             if not user.is_superuser:
-
                 # Checking if it's a manager that's deleting the location
                 manager = ManagerUser.objects.get(user_id=user)
 
                 # Checking if the manager owns the location
-                ManagerLocation.objects.get(manager=manager,location=location)
+                ManagerLocation.objects.get(manager=manager, location=location)
 
             data = json.loads(request.body)
 

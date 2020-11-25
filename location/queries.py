@@ -1,12 +1,13 @@
-from .models import Location, SocialMedia, ManagerLocation
-from base64 import b64decode
-from django.core.files.base import ContentFile
-from django.core import serializers
-
 import json
+from base64 import b64decode
+
+from django.core import serializers
+from django.core.files.base import ContentFile
+
+from .models import Location, SocialMedia, ManagerLocation
+
 
 def create_location(location, manager):
-
     try:
         # Creating Location
         location_created = Location()
@@ -57,7 +58,6 @@ def get_location_by_uuid(location_uuid):
 
 
 def delete_location_by_uuid(location_uuid):
-
     location = Location.objects.get(uuid=location_uuid)
 
     ManagerLocation.objects.get(location=location).delete()

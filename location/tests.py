@@ -1,14 +1,16 @@
-from django.core.management import call_command
-from django.conf import settings
-from django.test import Client, TestCase
-from location.models import Status
 import json
+
 import pyrebase
+from django.conf import settings
+from django.core.management import call_command
+from django.test import Client, TestCase
+
+from location.models import Status
+
 
 class LocationTestCase(TestCase):
 
     def login_manager(self):
-
         # Making sure the DB has the correct permission groups
         call_command('validatepermissions')
 
