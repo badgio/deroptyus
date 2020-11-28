@@ -1,8 +1,8 @@
 import json
 from django.core import serializers
 from django.core.files.base import ContentFile
-
-from .models import Location, Status
+from base64 import b64decode
+from .models import Location
 
 
 def create_location(location, manager):
@@ -16,8 +16,8 @@ def create_location(location, manager):
         location_created.longitude = location['longitude']
         location_created.website = location["website"]
         location_created.status = location["status"]
-        location_update.facebook = location['facebook']
-        location_update.instagram = location['instagram']
+        location_created.facebook = location['facebook']
+        location_created.instagram = location['instagram']
 
         if location["image"]:
             format, imgstr = location["image"].split(';base64,')
@@ -103,6 +103,7 @@ def decodeLocation(data):
         'image': data.get("image"),
         'facebook': data.get("facebook"),
         'instagram': data.get("instagram"),
+        'status': data.get('status')
     }
     return location
 

@@ -123,7 +123,6 @@ class LocationTestCase(TestCase):
         latitude = "-13.2521"
         longitude = "-43.4172"
         image = ""
-        social_media = ""
         facebook = "www.facebook.com"
         instagram = "www.instagram.com"
         status = Status.APPROVE
