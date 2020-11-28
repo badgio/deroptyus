@@ -1,4 +1,3 @@
-import json
 from base64 import b64encode
 
 from django.contrib.auth import authenticate
@@ -20,10 +19,10 @@ def locations(request):
 
     if request.method == 'POST':
 
-        if user.has_perm('location.add_location'):
+        if user.has_perm('locations.add_location'):
 
             try:
-                location = queries.decodeLocation(json.loads(request.body))
+                location = queries.decode_location(request.body)
 
                 if not (location["name"] and location["description"]):
                     return HttpResponse(
@@ -33,13 +32,13 @@ def locations(request):
                 manager = ManagerUser.objects.get(user_id=user)
 
                 created = queries.create_location(location, manager)
-                location_serialize = queries.serialize_json_location([created])[0]["fields"]
+                location_serialize = queries.encode_location([created])[0]["fields"]
 
                 return JsonResponse(location_serialize, status=201)
 
             except Exception as e:
 
-                return HttpResponse(status=400, reason=f"Bad Request: Couldn't post Locations {e}")
+                return HttpResponse(status=400, reason=f"Bad Request: Could not post Locations {e}")
 
         else:
 
@@ -50,12 +49,12 @@ def locations(request):
     elif request.method == 'GET':
 
         # Possibly needs the permission to see if the location is related to this user
-        if user.has_perm('location.view_location'):
+        if user.has_perm('locations.view_location'):
 
             try:
 
                 all_location = queries.get_location()
-                location_serialize = queries.serialize_json_location(all_location)
+                location_serialize = queries.encode_location(all_location)
 
                 to_return = []
                 for i in location_serialize:
@@ -70,9 +69,9 @@ def locations(request):
 
                 return JsonResponse(to_return, safe=False)
 
-            except Exception:
+            except Exception as e:
 
-                return HttpResponse(status=400, reason="Bad Request: Couldn't get Locations")
+                return HttpResponse(status=400, reason=f"Bad Request: Could not get Locations {e}")
 
         else:
 
@@ -95,13 +94,13 @@ def crud_location(request, uuid):
 
     if request.method == 'GET':
 
-        if user.has_perm('location.view_location'):
+        if user.has_perm('locations.view_location'):
 
             try:
                 get_location = queries.get_location_by_uuid(uuid)
 
                 if get_location:
-                    location_serialize = queries.serialize_json_location([get_location])[0]["fields"]
+                    location_serialize = queries.encode_location([get_location])[0]["fields"]
                     return JsonResponse(location_serialize)
 
                 else:
@@ -154,11 +153,11 @@ def crud_location(request, uuid):
                                     reason="Forbidden: Current user does not have the permission"
                                            " required to delete this location")
 
-            patch_location = queries.decodeLocation(json.loads(request.body))
+            patch_location = queries.decode_location(request.body)
             patch_location['uuid'] = uuid
 
             updated = queries.patch_location_by_uuid(location, patch_location)
-            location_serialize = queries.serialize_json_location([updated])[0]["fields"]
+            location_serialize = queries.encode_location([updated])[0]["fields"]
 
             return JsonResponse(location_serialize)
 
@@ -168,7 +167,7 @@ def crud_location(request, uuid):
 
         except Exception as e:
 
-            return HttpResponse(status=400, reason=f"Bad Request: Couldn't update Locations {e}")
+            return HttpResponse(status=400, reason=f"Bad Request: Could not update Locations {e}")
 
     else:
 
