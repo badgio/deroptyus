@@ -1,10 +1,8 @@
 import json
-from base64 import b64decode
-
 from django.core import serializers
 from django.core.files.base import ContentFile
 
-from .models import Location, SocialMedia
+from .models import Location, Status
 
 
 def create_location(location, manager):
@@ -18,6 +16,8 @@ def create_location(location, manager):
         location_created.longitude = location['longitude']
         location_created.website = location["website"]
         location_created.status = location["status"]
+        location_update.facebook = location['facebook']
+        location_update.instagram = location['instagram']
 
         if location["image"]:
             format, imgstr = location["image"].split(';base64,')
@@ -28,16 +28,6 @@ def create_location(location, manager):
 
         location_created.manager = manager
         location_created.save()
-
-        # Creating Social Media for a Location
-
-        if location['social_media']:
-            for i in location['social_media']:
-                social_media_created = SocialMedia()
-                social_media_created.location_id = location_created.id
-                social_media_created.social_media = i
-                social_media_created.link = location['social_media'][i]
-                social_media_created.save()
 
         return location_created
 
@@ -73,6 +63,10 @@ def patch_location_by_uuid(location_update, location):
             location_update.website = location['website']
         if location['status']:
             location_update.status = location['status']
+        if location['facebook']:
+            location_update.facebook = location['facebook']
+        if location['instagram']:
+            location_update.instagram = location['instagram']
 
         if location["image"]:
             image_name = location_update.name
@@ -81,32 +75,11 @@ def patch_location_by_uuid(location_update, location):
 
         location_update.save()
 
-        if location['social_media']:
-            for i in location['social_media']:
-                social_media_update = SocialMedia.objects.filter(
-                    location_id=location_update.id, social_media=i)
-                if social_media_update:
-                    social_media_update = SocialMedia.objects.get(
-                        location_id=location_update.id, social_media=i)
-                    social_media_update.social_media = i
-                    social_media_update.link = location['social_media'][i]
-                    social_media_update.save()
-                else:
-                    social_media_created = SocialMedia()
-                    social_media_created.location_id = location_update.id
-                    social_media_created.social_media = i
-                    social_media_created.link = location['social_media'][i]
-                    social_media_created.save()
-
         return location_update
 
     except Exception as e:
 
         raise ErrorCreate(f'Error Updating: {e}')
-
-
-def get_social_media_by_id(id):
-    return SocialMedia.objects.filter(location_id=id)
 
 
 def serialize_json_location(location):
@@ -120,19 +93,18 @@ def serialize_json_location(location):
                                                 'status']))
 
 
-def serialize_social_media(social_media):
-    if not social_media:
-        return None
-
-    social_media_serialize = json.loads(serializers.serialize("json",
-                                                              social_media,
-                                                              fields=['social_media',
-                                                                      'link']))
-    a = {}
-    for i in range(len(social_media_serialize)):
-        a[social_media_serialize[i]["fields"]["social_media"]] = social_media_serialize[i]["fields"]["link"]
-
-    return a
+def decodeLocation(data):
+    location = {
+        'name': data.get("name"),
+        'description': data.get("description"),
+        'latitude': data.get("latitude"),
+        'longitude': data.get("longitude"),
+        'website': data.get("website"),
+        'image': data.get("image"),
+        'facebook': data.get("facebook"),
+        'instagram': data.get("instagram"),
+    }
+    return location
 
 
 class ErrorCreate(Exception):
