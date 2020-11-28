@@ -21,10 +21,6 @@ class Location(models.Model):
     longitude = models.FloatField(null=True)
     image = models.ImageField(upload_to='upload/', null=True)
     status = models.IntegerField(choices=Status.choices, default=3)
+    instagram = models.CharField(max_length=255)
+    facebook = models.CharField(max_length=255)
     manager = models.ForeignKey(ManagerUser, on_delete=models.CASCADE)
-
-
-class SocialMedia(models.Model):
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    social_media = models.CharField(max_length=255)
-    link = models.CharField(max_length=255)

@@ -54,7 +54,8 @@ class LocationTestCase(TestCase):
         latitude = "-13.2521"
         longitude = "-43.4172"
         image = ""
-        social_media = ""
+        facebook = "www.facebook.com"
+        instagram = "www.instagram.com"
         status = Status.APPROVE
 
         client = Client(HTTP_AUTHORIZATION=self.login_manager())
@@ -65,14 +66,15 @@ class LocationTestCase(TestCase):
             'description': description,
             'latitude': latitude,
             'longitude': longitude,
-            'social_media': social_media,
+            'facebook': facebook,
+            'instagram': instagram,
             'website': website,
             'image': image,
             'status': status
         }, content_type="application/json")
 
         # Asserting the success of the location creation
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_app_location_get_with_uuid(self):
         """
@@ -85,7 +87,8 @@ class LocationTestCase(TestCase):
         latitude = "-13.2521"
         longitude = "-43.4172"
         image = ""
-        social_media = ""
+        facebook = "www.facebook.com"
+        instagram = "www.instagram.com"
         status = Status.APPROVE
 
         client = Client(HTTP_AUTHORIZATION=self.login_manager())
@@ -96,8 +99,9 @@ class LocationTestCase(TestCase):
             'description': description,
             'latitude': latitude,
             'longitude': longitude,
-            'social_media': social_media,
             'website': website,
+            'facebook': facebook,
+            'instagram': instagram,
             'image': image,
             'status': status
         }, content_type="application/json")
@@ -119,7 +123,8 @@ class LocationTestCase(TestCase):
         latitude = "-13.2521"
         longitude = "-43.4172"
         image = ""
-        social_media = ""
+        facebook = "www.facebook.com"
+        instagram = "www.instagram.com"
         status = Status.APPROVE
 
         client = Client(HTTP_AUTHORIZATION=self.login_manager())
@@ -130,7 +135,8 @@ class LocationTestCase(TestCase):
             'description': description,
             'latitude': latitude,
             'longitude': longitude,
-            'social_media': social_media,
+            'facebook': facebook,
+            'instagram': instagram,
             'website': website,
             'image': image,
             'status': status
@@ -161,7 +167,8 @@ class LocationTestCase(TestCase):
         latitude = "-13.2521"
         longitude = "-43.4172"
         image = ""
-        social_media = ""
+        facebook = "www.facebook.com"
+        instagram = "www.instagram.com"
         status = Status.APPROVE
 
         client = Client(HTTP_AUTHORIZATION=self.login_manager())
@@ -172,7 +179,8 @@ class LocationTestCase(TestCase):
             'description': description,
             'latitude': latitude,
             'longitude': longitude,
-            'social_media': social_media,
+            'facebook': facebook,
+            'instagram': instagram,
             'website': website,
             'image': image,
             'status': status

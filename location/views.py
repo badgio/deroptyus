@@ -7,7 +7,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 from firebase.auth import InvalidIdToken, NoTokenProvided
 from users.models import ManagerUser
 from . import queries
-from .models import Location, Status
+from .models import Location
 
 
 def locations(request):
@@ -23,35 +23,19 @@ def locations(request):
         if user.has_perm('location.add_location'):
 
             try:
-                data = json.loads(request.body)
+                location = queries.decodeLocation(json.loads(request.body))
 
-                name = data.get("name")
-                description = data.get("description")
-
-                if not (name and description):
+                if not (location["name"] and location["description"]):
                     return HttpResponse(
                         status=400, reason="Bad Request: Need name and description")
-
-                location = {
-                    'name': name,
-                    'description': description,
-                    'latitude': data.get("latitude"),
-                    'longitude': data.get("longitude"),
-                    'social_media': data.get("social_media"),
-                    'website': data.get("website"),
-                    'image': data.get("image"),
-                    'status': data.get("status", Status.WAIT)
-                }
 
                 # Getting the manager that's creating the location
                 manager = ManagerUser.objects.get(user_id=user)
 
                 created = queries.create_location(location, manager)
                 location_serialize = queries.serialize_json_location([created])[0]["fields"]
-                location_serialize['social_media'] = queries.serialize_social_media(
-                    queries.get_social_media_by_id(created.pk))
 
-                return JsonResponse(location_serialize)
+                return JsonResponse(location_serialize, status=201)
 
             except Exception as e:
 
@@ -77,7 +61,6 @@ def locations(request):
                 for i in location_serialize:
 
                     current = i["fields"]
-                    current['social_media'] = queries.serialize_social_media(queries.get_social_media_by_id(i['pk']))
 
                     if current['image']:
                         encoder = b64encode(open(current['image'], 'rb').read())
@@ -116,12 +99,9 @@ def crud_location(request, uuid):
 
             try:
                 get_location = queries.get_location_by_uuid(uuid)
-                social_media = queries.get_social_media_by_id(get_location.id)
+
                 if get_location:
-
                     location_serialize = queries.serialize_json_location([get_location])[0]["fields"]
-                    location_serialize['social_media'] = queries.serialize_social_media(social_media)
-
                     return JsonResponse(location_serialize)
 
                 else:
@@ -174,25 +154,11 @@ def crud_location(request, uuid):
                                     reason="Forbidden: Current user does not have the permission"
                                            " required to delete this location")
 
-            data = json.loads(request.body)
+            patch_location = queries.decodeLocation(json.loads(request.body))
+            patch_location['uuid'] = uuid
 
-            patch_location = {
-                'uuid': uuid,
-                'name': data.get("name"),
-                'description': data.get("description"),
-                'latitude': data.get("latitude"),
-                'longitude': data.get("longitude"),
-                'social_media': data.get("social_media"),
-                'website': data.get("website"),
-                'image': data.get("image"),
-                'status': data.get("status")
-            }
             updated = queries.patch_location_by_uuid(location, patch_location)
             location_serialize = queries.serialize_json_location([updated])[0]["fields"]
-
-            social_media = queries.get_social_media_by_id(updated.id)
-
-            location_serialize['social_media'] = queries.serialize_social_media(social_media)
 
             return JsonResponse(location_serialize)
 
