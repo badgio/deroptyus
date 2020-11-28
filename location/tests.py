@@ -74,7 +74,7 @@ class LocationTestCase(TestCase):
         }, content_type="application/json")
 
         # Asserting the success of the location creation
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 201)
 
     def test_app_location_get_with_uuid(self):
         """

@@ -35,7 +35,7 @@ def locations(request):
                 created = queries.create_location(location, manager)
                 location_serialize = queries.serialize_json_location([created])[0]["fields"]
 
-                return JsonResponse(location_serialize)
+                return JsonResponse(location_serialize, status=201)
 
             except Exception as e:
 
