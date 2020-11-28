@@ -5,7 +5,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import Client, TestCase
 
-from location.models import Status
+from .models import Status
 
 
 class LocationTestCase(TestCase):

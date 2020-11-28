@@ -82,7 +82,7 @@ def patch_location_by_uuid(location_update, location):
         raise ErrorCreate(f'Error Updating: {e}')
 
 
-def serialize_json_location(location):
+def encode_location(location):
     return json.loads(serializers.serialize("json",
                                             location,
                                             fields=[
@@ -93,17 +93,18 @@ def serialize_json_location(location):
                                                 'status']))
 
 
-def decodeLocation(data):
+def decode_location(data):
+    json_data = json.loads(data)
     location = {
-        'name': data.get("name"),
-        'description': data.get("description"),
-        'latitude': data.get("latitude"),
-        'longitude': data.get("longitude"),
-        'website': data.get("website"),
-        'image': data.get("image"),
-        'facebook': data.get("facebook"),
-        'instagram': data.get("instagram"),
-        'status': data.get('status')
+        'name': json_data.get("name"),
+        'description': json_data.get("description"),
+        'latitude': json_data.get("latitude"),
+        'longitude': json_data.get("longitude"),
+        'website': json_data.get("website"),
+        'image': json_data.get("image"),
+        'facebook': json_data.get("facebook"),
+        'instagram': json_data.get("instagram"),
+        'status': json_data.get('status')
     }
     return location
 
