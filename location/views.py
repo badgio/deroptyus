@@ -23,9 +23,9 @@ def locations(request):
         if user.has_perm('location.add_location'):
 
             try:
-                location = queries.decode(json.loads(request.body))
+                location = queries.decodeLocation(json.loads(request.body))
 
-                if not (location.name and location.description):
+                if not (location["name"] and location["description"]):
                     return HttpResponse(
                         status=400, reason="Bad Request: Need name and description")
 
