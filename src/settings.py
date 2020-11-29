@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'users',
     'firebase',
     'groupadmin_users',
+    'badges',
 ]
 
 MIDDLEWARE = [
