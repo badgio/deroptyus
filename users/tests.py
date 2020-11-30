@@ -188,6 +188,7 @@ class UsersTestCase(TestCase):
         # Making the Group has the correct permissions
         appers_permission_codenames = [
             'view_location',
+            'view_badge',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=appers_permission_codenames).all(),
                             appers_group.permissions.all())
@@ -209,6 +210,7 @@ class UsersTestCase(TestCase):
         managers_permission_codenames = [
             'add_location',
             'view_location',
+            'view_badge',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=managers_permission_codenames).all(),
                             managers_group.permissions.all())
@@ -229,6 +231,8 @@ class UsersTestCase(TestCase):
         # Making the Group has the correct permissions
         promoters_permission_codenames = [
             'view_location',
+            'add_badge',
+            'view_badge',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=promoters_permission_codenames).all(),
                             promoters_group.permissions.all())
