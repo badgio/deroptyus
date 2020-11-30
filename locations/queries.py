@@ -1,39 +1,37 @@
 import json
+from base64 import b64decode
+
 from django.core import serializers
 from django.core.files.base import ContentFile
-from base64 import b64decode
-from .models import Location
+
+from .models import Location, Status
 
 
 def create_location(location, manager):
-    try:
-        # Creating Location
-        location_created = Location()
+    # Creating Location
+    location_created = Location()
 
-        location_created.name = location['name']
-        location_created.description = location['description']
-        location_created.latitude = location['latitude']
-        location_created.longitude = location['longitude']
-        location_created.website = location["website"]
-        location_created.status = location["status"]
-        location_created.facebook = location['facebook']
-        location_created.instagram = location['instagram']
+    location_created.name = location.get('name')
+    location_created.description = location.get('description')
+    location_created.latitude = location.get('latitude')
+    location_created.longitude = location.get('longitude')
+    location_created.website = location.get("website")
+    location_created.status = location.get("status")
+    location_created.facebook = location.get('facebook')
+    location_created.instagram = location.get('instagram')
 
-        if location["image"]:
-            format, imgstr = location["image"].split(';base64,')
+    if location.get("image"):
+        try:
+            format, imgstr = location.get("image").split(';base64,')
             ext = format.split('/')[-1]
             location_created.image = ContentFile(b64decode(imgstr), name=str(location_created.uuid) + '.' + ext)
-        else:
-            location_created.image = None
+        except Exception as e:
+            raise NotAValidImage(e)
 
-        location_created.manager = manager
-        location_created.save()
+    location_created.manager = manager
+    location_created.save()
 
-        return location_created
-
-    except Exception as e:
-
-        raise ErrorCreate(f'Error creating: {e}')
+    return location_created
 
 
 def get_location():
@@ -49,37 +47,34 @@ def delete_location_by_uuid(location_uuid):
 
 
 def patch_location_by_uuid(location_update, location):
-    try:
+    if location.get('name'):
+        location_update.name = location.get('name')
+    if location.get('description'):
+        location_update.description = location.get('description')
+    if location.get('latitude'):
+        location_update.latitude = location.get('latitude')
+    if location.get('longitude'):
+        location_update.longitude = location.get('longitude')
+    if location.get('website'):
+        location_update.website = location.get('website')
+    if location.get('status'):
+        location_update.status = location.get('status')
+    if location.get('facebook'):
+        location_update.facebook = location.get('facebook')
+    if location.get('instagram'):
+        location_update.instagram = location.get('instagram')
 
-        if location['name']:
-            location_update.name = location['name']
-        if location['description']:
-            location_update.description = location['description']
-        if location['latitude']:
-            location_update.latitude = location['latitude']
-        if location['longitude']:
-            location_update.longitude = location['longitude']
-        if location['website']:
-            location_update.website = location['website']
-        if location['status']:
-            location_update.status = location['status']
-        if location['facebook']:
-            location_update.facebook = location['facebook']
-        if location['instagram']:
-            location_update.instagram = location['instagram']
-
-        if location["image"]:
+    if location.get("image"):
+        try:
             image_name = location_update.name
-            image_data = b64decode(location["image"])
+            image_data = b64decode(location.get("image"))
             location_update.image = ContentFile(image_data, image_name)
+        except Exception as e:
+            raise NotAValidImage(e)
 
-        location_update.save()
+    location_update.save()
 
-        return location_update
-
-    except Exception as e:
-
-        raise ErrorCreate(f'Error Updating: {e}')
+    return location_update
 
 
 def encode_location(location):
@@ -89,11 +84,11 @@ def encode_location(location):
                                                 'uuid', 'name',
                                                 'description', 'website',
                                                 'latitude', 'longitude',
-                                                'image',
+                                                'image', 'facebook', 'instagram',
                                                 'status']))
 
 
-def decode_location(data):
+def decode_location(data, admin):
     json_data = json.loads(data)
     location = {
         'name': json_data.get("name"),
@@ -104,14 +99,10 @@ def decode_location(data):
         'image': json_data.get("image"),
         'facebook': json_data.get("facebook"),
         'instagram': json_data.get("instagram"),
-        'status': json_data.get('status')
+        'status': json_data.get("status") if admin else Status.PENDING  # Only admin can change status
     }
     return location
 
 
-class ErrorCreate(Exception):
-    pass
-
-
-class ErrorUpdate(Exception):
+class NotAValidImage(Exception):
     pass

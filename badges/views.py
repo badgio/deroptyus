@@ -22,13 +22,13 @@ def badges(request):
         if user.has_perm('badges.add_badge'):
 
             try:
-                badge = queries.decode_badge(request.body)
+                badge = queries.decode_badge(request.body, user.is_superuser)
 
                 if not (badge["name"] and badge["description"]):
                     return HttpResponse(
                         status=400, reason="Bad Request: Need name and description")
 
-                # Getting the manager that's creating the badge
+                # Getting the promoter that's creating the badge
                 promoter = PromoterUser.objects.get(user_id=user)
 
                 created = queries.create_badge(badge, promoter)
@@ -36,8 +36,22 @@ def badges(request):
 
                 return JsonResponse(badge_serialize, status=201)
 
-            except Exception as e:
+            except queries.NotAValidLocation:
+                return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
 
+            except queries.NotAValidImage:
+                return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
+
+            except queries.NotAValidStartDate:
+                return HttpResponse(status=400, reason="Bad Request: Starting date format must be: "
+                                                       "YYYY-MM-DDTHH:MM:SS")
+            except queries.NotAValidEndDate:
+                return HttpResponse(status=400, reason="Bad Request: Ending date format must be: "
+                                                       "YYYY-MM-DDTHH:MM:SS")
+            except queries.EndDateNotAfterStartDate:
+                return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
+
+            except Exception as e:
                 return HttpResponse(status=400, reason=f"Bad Request: Could not post Badges {e}")
 
         else:
@@ -70,7 +84,6 @@ def badges(request):
                 return JsonResponse(to_return, safe=False)
 
             except Exception as e:
-
                 return HttpResponse(status=400, reason=f"Bad Request: Could not get Badges {e}")
 
         else:
@@ -99,15 +112,14 @@ def crud_badge(request, uuid):
             try:
                 get_badge = queries.get_badge_by_uuid(uuid)
 
-                if get_badge:
-                    badge_serialize = queries.encode_badge([get_badge])[0]["fields"]
-                    return JsonResponse(badge_serialize)
+                badge_serialize = queries.encode_badge([get_badge])[0]["fields"]
+                return JsonResponse(badge_serialize)
 
-                else:
-                    HttpResponse(status=400, reason="Bad request: Error no badge with that UUID")
+            except Badge.DoesNotExist:
+                return HttpResponse(status=400, reason="Bad request: Error no badge with that UUID")
 
             except Exception as e:
-                HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
+                return HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
 
         else:
 
@@ -121,8 +133,8 @@ def crud_badge(request, uuid):
 
             badge = queries.get_badge_by_uuid(uuid)
 
-            # Checking if it's admin or the manager that created the badge
-            if not user.is_superuser and badge.manager.user != user:
+            # Checking if it's admin or the promoter that created the badge
+            if not user.is_superuser and badge.promoter.user != user:
                 return HttpResponse(status=403,
                                     reason="Forbidden: Current user does not have the permission"
                                            " required to delete this badge")
@@ -133,12 +145,10 @@ def crud_badge(request, uuid):
             else:
                 return HttpResponse(status=400, reason="Bad request: Failed to delete")
 
-        except badge.DoesNotExist:
-
+        except Badge.DoesNotExist:
             return HttpResponse(status=404, reason="Not Found: No badge by that UUID")
 
         except Exception as e:
-
             return HttpResponse(status=400, reason=f"Bad request: Error on Delete {e}")
 
     elif request.method == 'PATCH':
@@ -147,13 +157,13 @@ def crud_badge(request, uuid):
 
             badge = queries.get_badge_by_uuid(uuid)
 
-            # Checking if it's admin or the manager that created the badge
-            if not user.is_superuser and badge.manager.user != user:
+            # Checking if it's admin or the promoter that created the badge
+            if not user.is_superuser and badge.promoter.user != user:
                 return HttpResponse(status=403,
                                     reason="Forbidden: Current user does not have the permission"
                                            " required to delete this badge")
 
-            patch_badge = queries.decode_badge(request.body)
+            patch_badge = queries.decode_badge(request.body, user.is_superuser)
             patch_badge['uuid'] = uuid
 
             updated = queries.patch_badge_by_uuid(badge, patch_badge)
@@ -161,12 +171,16 @@ def crud_badge(request, uuid):
 
             return JsonResponse(badge_serialize)
 
-        except badge.DoesNotExist:
-
+        except Badge.DoesNotExist:
             return HttpResponse(status=404, reason="Not Found: No badge by that UUID")
 
-        except Exception as e:
+        except queries.NotAValidImage:
+            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
 
+        except queries.NotAValidLocation:
+            return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
+
+        except Exception as e:
             return HttpResponse(status=400, reason=f"Bad Request: Could not update badges {e}")
 
     else:

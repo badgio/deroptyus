@@ -1,18 +1,38 @@
+from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from django.core.management import call_command
 from django.test import Client
 from django.test import TestCase
 from firebase_admin import auth
+import pyrebase
 
 from firebase.auth import FirebaseBackend
 from firebase.models import FirebaseUser
 from .models import AppUser, ManagerUser, PromoterUser, User
 
 
-# Create your tests here.
-
 class UsersTestCase(TestCase):
     firebase_backend = FirebaseBackend()
+    pyrebase_app = pyrebase.initialize_app(settings.PYREBASE_API_KEY)
+
+    def log_in(self, type, email, password):
+        # Making sure the DB has the correct permission groups
+        call_command('validatepermissions')
+
+        client = Client()
+
+        # Sending request to create an app user
+        client.post(f'/v0/users/{type}', {
+            'email': email,
+            'password': password
+        }, content_type="application/json")
+
+        # Logging the user in the Firebase Console and returning the token for authentication
+        return self.pyrebase_app.auth().sign_in_with_email_and_password(email=email, password=password)["idToken"]
+
+    def log_out(self, email):
+        # Removing the user from the firebase DB (as it's not temporary)
+        self.firebase_backend.delete_user_by_email(email=email)
 
     def test_app_user_creation(self):
         # Making sure the DB has the correct permission groups
