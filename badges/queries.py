@@ -4,6 +4,7 @@ from datetime import datetime
 
 from django.core import serializers
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 from locations.models import Location
 from .models import Badge, Status
@@ -55,10 +56,17 @@ def get_badge_by_uuid(badge_uuid):
 
 
 def delete_badge_by_uuid(badge_uuid):
-    return Badge.objects.get(uuid=badge_uuid).delete()
+    badge = get_badge_by_uuid(badge_uuid)
+    # Deleting previous image from storage
+    if badge.image:
+        default_storage.delete(badge.image.path)
+    return badge.delete()
 
 
-def patch_badge_by_uuid(badge_update, badge):
+def patch_badge_by_uuid(badge_uuid, badge):
+    # Getting badge to update
+    badge_update = get_badge_by_uuid(badge_uuid)
+    # Updating provided fields
     if badge.get('name'):
         badge_update.name = badge.get('name')
     if badge.get('description'):
@@ -80,9 +88,12 @@ def patch_badge_by_uuid(badge_update, badge):
 
     if badge.get("image"):
         try:
-            image_name = badge_update.name
-            image_data = b64decode(badge.get("image"))
-            badge_update.image = ContentFile(image_data, image_name)
+            # Deleting previous image from storage
+            default_storage.delete(badge.image.path)
+            # Decoding and storing new image
+            img_format, img_str = badge.get("image").split(';base64,')
+            ext = img_format.split('/')[-1]
+            badge_update.image = ContentFile(b64decode(img_str), name=str(badge_update.uuid) + '.' + ext)
         except Exception:
             raise NotAValidImage()
 

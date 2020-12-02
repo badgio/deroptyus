@@ -13,6 +13,8 @@ def badges(request):
     # Authenticating user
     try:
         user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
     except (InvalidIdToken, NoTokenProvided):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
@@ -166,7 +168,7 @@ def crud_badge(request, uuid):
             patch_badge = queries.decode_badge(request.body, user.is_superuser)
             patch_badge['uuid'] = uuid
 
-            updated = queries.patch_badge_by_uuid(badge, patch_badge)
+            updated = queries.patch_badge_by_uuid(uuid, patch_badge)
             badge_serialize = queries.encode_badge([updated])[0]["fields"]
 
             return JsonResponse(badge_serialize)

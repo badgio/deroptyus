@@ -3,6 +3,7 @@ from base64 import b64decode
 
 from django.core import serializers
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 
 from .models import Location, Status
 
@@ -22,9 +23,9 @@ def create_location(location, manager):
 
     if location.get("image"):
         try:
-            format, imgstr = location.get("image").split(';base64,')
-            ext = format.split('/')[-1]
-            location_created.image = ContentFile(b64decode(imgstr), name=str(location_created.uuid) + '.' + ext)
+            img_format, img_str = location.get("image").split(';base64,')
+            ext = img_format.split('/')[-1]
+            location_created.image = ContentFile(b64decode(img_str), name=str(location_created.uuid) + '.' + ext)
         except Exception as e:
             raise NotAValidImage(e)
 
@@ -43,10 +44,17 @@ def get_location_by_uuid(location_uuid):
 
 
 def delete_location_by_uuid(location_uuid):
-    return Location.objects.get(uuid=location_uuid).delete()
+    location = get_location_by_uuid(location_uuid)
+    # Deleting previous image from storage
+    if location.image:
+        default_storage.delete(location.image.path)
+    return location.delete()
 
 
-def patch_location_by_uuid(location_update, location):
+def patch_location_by_uuid(location_uuid, location):
+    # Getting location to update
+    location_update = get_location_by_uuid(location_uuid)
+    # Updating provided fields
     if location.get('name'):
         location_update.name = location.get('name')
     if location.get('description'):
@@ -63,12 +71,14 @@ def patch_location_by_uuid(location_update, location):
         location_update.facebook = location.get('facebook')
     if location.get('instagram'):
         location_update.instagram = location.get('instagram')
-
     if location.get("image"):
         try:
-            image_name = location_update.name
-            image_data = b64decode(location.get("image"))
-            location_update.image = ContentFile(image_data, image_name)
+            # Deleting previous image from storage
+            default_storage.delete(location_update.image.path)
+            # Decoding and storing new image
+            img_format, img_str = location.get("image").split(';base64,')
+            ext = img_format.split('/')[-1]
+            location_update.image = ContentFile(b64decode(img_str), name=str(location_update.uuid) + '.' + ext)
         except Exception as e:
             raise NotAValidImage(e)
 

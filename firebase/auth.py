@@ -14,7 +14,7 @@ class FirebaseBackend(BaseBackend):
 
         firebase_token = request.META.get("HTTP_AUTHORIZATION")
         if not firebase_token:
-            raise NoTokenProvided()
+            return None
 
         firebase_token = firebase_token.split(" ").pop()
 

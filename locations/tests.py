@@ -30,7 +30,6 @@ class LocationTestCase(TestCase):
         website = "bomjesus.pt"
         latitude = "-13.2521"
         longitude = "-43.4172"
-        image = ""
         facebook = "www.facebook.com"
         instagram = "www.instagram.com"
 
@@ -43,7 +42,6 @@ class LocationTestCase(TestCase):
             'facebook': facebook,
             'instagram': instagram,
             'website': website,
-            'image': image,
         }, content_type="application/json")
 
     def get_location(self):

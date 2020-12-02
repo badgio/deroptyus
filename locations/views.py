@@ -13,6 +13,8 @@ def locations(request):
     # Authenticating user
     try:
         user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
     except (InvalidIdToken, NoTokenProvided):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
@@ -36,9 +38,9 @@ def locations(request):
 
                 return JsonResponse(location_serialize, status=201)
 
-            except queries.NotAValidImage:
+            except queries.NotAValidImage as e:
 
-                return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
+                return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
 
             except Exception as e:
 
@@ -159,7 +161,7 @@ def crud_location(request, uuid):
             patch_location = queries.decode_location(request.body, user.is_superuser)
             patch_location['uuid'] = uuid
 
-            updated = queries.patch_location_by_uuid(location, patch_location)
+            updated = queries.patch_location_by_uuid(uuid, patch_location)
             location_serialize = queries.encode_location([updated])[0]["fields"]
 
             return JsonResponse(location_serialize)
@@ -168,9 +170,9 @@ def crud_location(request, uuid):
 
             return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
 
-        except queries.NotAValidImage:
+        except queries.NotAValidImage as e:
 
-            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
+            return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
 
         except Exception as e:
 

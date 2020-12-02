@@ -32,7 +32,6 @@ class BadgeTestCase(TestCase):
 
         name = "Bom Jesus"
         description = "Santuário do Bom Jesus do Monte"
-        image = ""
         start_date = datetime.utcnow()
         end_date = datetime.utcnow() + timedelta(days=30)
         location = locations.get_location()
@@ -41,7 +40,6 @@ class BadgeTestCase(TestCase):
         return client.post('/v0/badges/', {
             'name': name,
             'description': description,
-            'image': image,
             'start_date': start_date,
             'end_date': end_date,
             'location': location
