@@ -13,6 +13,7 @@ This project was carried out in the first semester of the fifth year of informat
 
 ### How to use the virtual environment
 
+
 1. Create a virtual environment `python3 -m venv venv/`
 1. Source the virtual environment `source venv/bin/activate`
 1. Install the environment `pip install -r requirements.txt`

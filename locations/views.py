@@ -13,6 +13,8 @@ def locations(request):
     # Authenticating user
     try:
         user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
     except (InvalidIdToken, NoTokenProvided):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
@@ -22,7 +24,7 @@ def locations(request):
         if user.has_perm('locations.add_location'):
 
             try:
-                location = queries.decode_location(request.body)
+                location = queries.decode_location(request.body, False)
 
                 if not (location["name"] and location["description"]):
                     return HttpResponse(
@@ -35,6 +37,10 @@ def locations(request):
                 location_serialize = queries.encode_location([created])[0]["fields"]
 
                 return JsonResponse(location_serialize, status=201)
+
+            except queries.NotAValidImage as e:
+
+                return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
 
             except Exception as e:
 
@@ -99,15 +105,14 @@ def crud_location(request, uuid):
             try:
                 get_location = queries.get_location_by_uuid(uuid)
 
-                if get_location:
-                    location_serialize = queries.encode_location([get_location])[0]["fields"]
-                    return JsonResponse(location_serialize)
+                location_serialize = queries.encode_location([get_location])[0]["fields"]
+                return JsonResponse(location_serialize)
 
-                else:
-                    HttpResponse(status=400, reason="Bad request: Error no Location with that UUID")
+            except Location.DoesNotExist:
+                return HttpResponse(status=400, reason="Bad request: No Location with that UUID")
 
             except Exception as e:
-                HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
+                return HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
 
         else:
 
@@ -153,10 +158,10 @@ def crud_location(request, uuid):
                                     reason="Forbidden: Current user does not have the permission"
                                            " required to delete this location")
 
-            patch_location = queries.decode_location(request.body)
+            patch_location = queries.decode_location(request.body, user.is_superuser)
             patch_location['uuid'] = uuid
 
-            updated = queries.patch_location_by_uuid(location, patch_location)
+            updated = queries.patch_location_by_uuid(uuid, patch_location)
             location_serialize = queries.encode_location([updated])[0]["fields"]
 
             return JsonResponse(location_serialize)
@@ -164,6 +169,10 @@ def crud_location(request, uuid):
         except Location.DoesNotExist:
 
             return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
+
+        except queries.NotAValidImage as e:
+
+            return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
 
         except Exception as e:
 

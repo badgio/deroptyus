@@ -5,10 +5,10 @@ from django.db import models
 from users.models import ManagerUser
 
 
-class Status(models.IntegerChoices):
-    APPROVE = 1
-    REJECT = 2
-    WAIT = 3
+class Status(models.TextChoices):
+    APPROVED = "APPROVED", "Approved"
+    REJECTED = "REJECTED", "Rejected"
+    PENDING = "PENDING", "Pending Approval"
 
 
 class Location(models.Model):
@@ -19,8 +19,8 @@ class Location(models.Model):
     website = models.CharField(max_length=255, null=True)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
-    image = models.ImageField(upload_to='upload/', null=True)
-    status = models.IntegerField(choices=Status.choices, default=3)
-    instagram = models.CharField(max_length=255)
-    facebook = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='upload/locations/', null=True)
+    status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
+    instagram = models.CharField(max_length=255, null=True)
+    facebook = models.CharField(max_length=255, null=True)
     manager = models.ForeignKey(ManagerUser, on_delete=models.CASCADE)

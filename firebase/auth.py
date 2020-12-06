@@ -14,7 +14,7 @@ class FirebaseBackend(BaseBackend):
 
         firebase_token = request.META.get("HTTP_AUTHORIZATION")
         if not firebase_token:
-            raise NoTokenProvided()
+            return None
 
         firebase_token = firebase_token.split(" ").pop()
 
@@ -41,6 +41,13 @@ class FirebaseBackend(BaseBackend):
             firebase_user = auth.create_user(email=email, password=password, app=self.app)
 
         return firebase_user.uid
+
+    def delete_user_by_email(self, email):
+        try:
+            firebase_user = auth.get_user_by_email(email)
+            auth.delete_user(firebase_user.uid, app=self.app)
+        except auth.UserNotFoundError:
+            pass
 
 
 class FirebaseError(Exception):

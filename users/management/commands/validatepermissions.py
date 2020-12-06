@@ -26,6 +26,7 @@ class Command(BaseCommand):
         # Listing every permission that an App User should have
         appers_permission_codenames = [
             'view_location',
+            'view_badge',
         ]
 
         # Clearing previous permissions
@@ -49,6 +50,7 @@ class Command(BaseCommand):
         managers_permission_codenames = [
             'add_location',
             'view_location',
+            'view_badge',
         ]
 
         # Clearing previous permissions
@@ -70,6 +72,8 @@ class Command(BaseCommand):
         # Listing every permission that an Promoter should have
         promoters_permission_codenames = [
             'view_location',
+            'add_badge',
+            'view_badge',
         ]
 
         # Clearing previous permissions
