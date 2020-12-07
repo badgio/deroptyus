@@ -41,10 +41,11 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'locations',
+    'tags',
+    'badges',
     'users',
     'firebase',
     'groupadmin_users',
-    'badges',
 ]
 
 MIDDLEWARE = [

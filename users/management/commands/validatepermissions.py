@@ -1,7 +1,7 @@
 from django.contrib.auth.models import Group, Permission
 from django.core.management.base import BaseCommand
 
-from ...models import User, AppUser, ManagerUser, PromoterUser
+from ...models import User, AppUser, ManagerUser, PromoterUser, AdminUser
 
 
 class Command(BaseCommand):
@@ -18,6 +18,9 @@ class Command(BaseCommand):
         # Validating Promoters
         self.validate_promoters()
 
+        # Validating Admins
+        self.validate_admins()
+
     def validate_appers(self):
 
         # Checking that a Permission Group for App Users exists
@@ -27,6 +30,7 @@ class Command(BaseCommand):
         appers_permission_codenames = [
             'view_location',
             'view_badge',
+            'redeem_badge',
         ]
 
         # Clearing previous permissions
@@ -86,3 +90,33 @@ class Command(BaseCommand):
         for promoter in PromoterUser.objects.all():
             user = User.objects.get(id=promoter.user_id)
             user.groups.add(promoters_group)
+
+    def validate_admins(self):
+
+        # Checking that a Permission Group for Admins exists
+        admins_group, _ = Group.objects.get_or_create(name='admins_permission_group')
+
+        # Listing every permission that an Admin should have
+        admins_permission_codenames = [
+            'view_location',
+            'change_location',
+            'delete_location',
+            'view_badge',
+            'change_location',
+            'delete_location',
+            'add_tag',
+            'view_tag',
+            'change_tag',
+            'delete_tag',
+        ]
+
+        # Clearing previous permissions
+        admins_group.permissions.clear()
+        # Adding existing Permissions to Group
+        for permission in Permission.objects.filter(codename__in=admins_permission_codenames):
+            admins_group.permissions.add(permission)
+
+        # Making sure every AdminUser is in the Admins' Permission Group
+        for admin in AdminUser.objects.all():
+            user = User.objects.get(id=admin.user_id)
+            user.groups.add(admins_group)

@@ -1,14 +1,14 @@
-import json
 from base64 import b64decode
+from mimetypes import guess_extension
 
-from django.core import serializers
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
-from .models import Location, Status
+from users.models import ManagerUser
+from .models import Location
 
 
-def create_location(location, manager):
+def create_location(location, user_id):
     # Creating Location
     location_created = Location()
 
@@ -23,19 +23,30 @@ def create_location(location, manager):
 
     if location.get("image"):
         try:
+            # Accepted format: data:<mime_type>;base64,<encoding>
             img_format, img_str = location.get("image").split(';base64,')
-            ext = img_format.split('/')[-1]
-            location_created.image = ContentFile(b64decode(img_str), name=str(location_created.uuid) + '.' + ext)
+            _, mime_type = img_format.split(':')
+
+            # If MIME type is not image
+            if mime_type.split("/")[0] != "image":
+                raise NotAValidImage()
+
+            # Decoding image from base64
+            decoded_img = b64decode(img_str)
+            # Getting extension from MIME type
+            file_extension = guess_extension(mime_type)
+            # Storing image
+            location_created.image = ContentFile(decoded_img, name=str(location_created.uuid) + '.' + file_extension)
         except Exception as e:
             raise NotAValidImage(e)
 
-    location_created.manager = manager
+    location_created.manager = ManagerUser.objects.get(user_id=user_id)
     location_created.save()
 
     return location_created
 
 
-def get_location():
+def get_locations():
     return Location.objects.all()
 
 
@@ -73,45 +84,31 @@ def patch_location_by_uuid(location_uuid, location):
         location_update.instagram = location.get('instagram')
     if location.get("image"):
         try:
+            # Accepted format: data:<mime_type>;base64,<encoding>
+            img_format, img_str = location.get("image").split(';base64,')
+            _, mime_type = img_format.split(':')
+
+            # If MIME type is not image
+            if mime_type.split("/")[0] != "image":
+                raise NotAValidImage()
+
+            # Decoding image from base64
+            decoded_img = b64decode(img_str)
+
             # Deleting previous image from storage
             default_storage.delete(location_update.image.path)
-            # Decoding and storing new image
-            img_format, img_str = location.get("image").split(';base64,')
-            ext = img_format.split('/')[-1]
-            location_update.image = ContentFile(b64decode(img_str), name=str(location_update.uuid) + '.' + ext)
+
+            # Getting extension from MIME type
+            file_extension = guess_extension(mime_type)
+            # Storing image
+            location_update.image = ContentFile(decoded_img, name=str(location_update.uuid) + '.' + file_extension)
+
         except Exception as e:
             raise NotAValidImage(e)
 
     location_update.save()
 
     return location_update
-
-
-def encode_location(location):
-    return json.loads(serializers.serialize("json",
-                                            location,
-                                            fields=[
-                                                'uuid', 'name',
-                                                'description', 'website',
-                                                'latitude', 'longitude',
-                                                'image', 'facebook', 'instagram',
-                                                'status']))
-
-
-def decode_location(data, admin):
-    json_data = json.loads(data)
-    location = {
-        'name': json_data.get("name"),
-        'description': json_data.get("description"),
-        'latitude': json_data.get("latitude"),
-        'longitude': json_data.get("longitude"),
-        'website': json_data.get("website"),
-        'image': json_data.get("image"),
-        'facebook': json_data.get("facebook"),
-        'instagram': json_data.get("instagram"),
-        'status': json_data.get("status") if admin else Status.PENDING  # Only admin can change status
-    }
-    return location
 
 
 class NotAValidImage(Exception):

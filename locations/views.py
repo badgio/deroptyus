@@ -1,13 +1,12 @@
-from base64 import b64encode
-
 from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided
-from users.models import ManagerUser
-from . import queries
+from . import queries, utils
 from .models import Location
 
+
+# Views
 
 def locations(request):
     # Authenticating user
@@ -21,69 +20,11 @@ def locations(request):
 
     if request.method == 'POST':
 
-        if user.has_perm('locations.add_location'):
-
-            try:
-                location = queries.decode_location(request.body, False)
-
-                if not (location["name"] and location["description"]):
-                    return HttpResponse(
-                        status=400, reason="Bad Request: Need name and description")
-
-                # Getting the manager that's creating the location
-                manager = ManagerUser.objects.get(user_id=user)
-
-                created = queries.create_location(location, manager)
-                location_serialize = queries.encode_location([created])[0]["fields"]
-
-                return JsonResponse(location_serialize, status=201)
-
-            except queries.NotAValidImage as e:
-
-                return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
-
-            except Exception as e:
-
-                return HttpResponse(status=400, reason=f"Bad Request: Could not post Locations {e}")
-
-        else:
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to add a location")
+        return handle_create_location(request, user)
 
     elif request.method == 'GET':
 
-        # Possibly needs the permission to see if the location is related to this user
-        if user.has_perm('locations.view_location'):
-
-            try:
-
-                all_location = queries.get_location()
-                location_serialize = queries.encode_location(all_location)
-
-                to_return = []
-                for i in location_serialize:
-
-                    current = i["fields"]
-
-                    if current['image']:
-                        encoder = b64encode(open(current['image'], 'rb').read())
-                        current['image'] = encoder.decode('utf-8')
-
-                    to_return.append(current)
-
-                return JsonResponse(to_return, safe=False)
-
-            except Exception as e:
-
-                return HttpResponse(status=400, reason=f"Bad Request: Could not get Locations {e}")
-
-        else:
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to view locations")
+        return handle_get_locations(request, user)
 
     else:
 
@@ -94,90 +35,153 @@ def crud_location(request, uuid):
     # Authenticating user
     try:
         user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
     except (InvalidIdToken, NoTokenProvided):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
     if request.method == 'GET':
 
-        if user.has_perm('locations.view_location'):
-
-            try:
-                get_location = queries.get_location_by_uuid(uuid)
-
-                location_serialize = queries.encode_location([get_location])[0]["fields"]
-                return JsonResponse(location_serialize)
-
-            except Location.DoesNotExist:
-                return HttpResponse(status=400, reason="Bad request: No Location with that UUID")
-
-            except Exception as e:
-                return HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
-
-        else:
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to view this location")
-
-    elif request.method == 'DELETE':
-
-        try:
-
-            location = queries.get_location_by_uuid(uuid)
-
-            # Checking if it's admin or the manager that created the location
-            if not user.is_superuser and location.manager.user != user:
-                return HttpResponse(status=403,
-                                    reason="Forbidden: Current user does not have the permission"
-                                           " required to delete this location")
-
-            result = queries.delete_location_by_uuid(uuid)
-            if result:
-                return HttpResponse(status=200)
-            else:
-                return HttpResponse(status=400, reason="Bad request: Failed to delete")
-
-        except Location.DoesNotExist:
-
-            return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
-
-        except Exception as e:
-
-            return HttpResponse(status=400, reason=f"Bad request: Error on Delete {e}")
+        return handle_get_location(request, uuid, user)
 
     elif request.method == 'PATCH':
 
-        try:
+        return handle_patch_location(request, uuid, user)
 
-            location = queries.get_location_by_uuid(uuid)
+    elif request.method == 'DELETE':
 
-            # Checking if it's admin or the manager that created the location
-            if not user.is_superuser and location.manager.user != user:
-                return HttpResponse(status=403,
-                                    reason="Forbidden: Current user does not have the permission"
-                                           " required to delete this location")
-
-            patch_location = queries.decode_location(request.body, user.is_superuser)
-            patch_location['uuid'] = uuid
-
-            updated = queries.patch_location_by_uuid(uuid, patch_location)
-            location_serialize = queries.encode_location([updated])[0]["fields"]
-
-            return JsonResponse(location_serialize)
-
-        except Location.DoesNotExist:
-
-            return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
-
-        except queries.NotAValidImage as e:
-
-            return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
-
-        except Exception as e:
-
-            return HttpResponse(status=400, reason=f"Bad Request: Could not update Locations {e}")
+        return handle_delete_location(request, uuid, user)
 
     else:
 
-        return HttpResponseNotAllowed(['PATCH', 'DELETE', 'GET'])
+        return HttpResponseNotAllowed(['GET', 'PATCH', 'DELETE'])
+
+
+# Auxiliary functions for the Views
+
+
+def handle_create_location(request, user):
+    # Checking permissions
+    if user.has_perm('locations.add_location'):
+
+        # Unserializing
+        try:
+            unserialized_location = utils.decode_location_from_json(request.body, False)
+
+            if not unserialized_location.get("name") or not unserialized_location.get("description"):
+                return HttpResponse(status=400, reason="Bad Request: Name and Description must be provided")
+
+        except utils.InvalidJSONData:
+            return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
+
+        # Executing query
+        try:
+
+            created_location = queries.create_location(unserialized_location, user.id)
+
+        except queries.NotAValidImage:
+            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
+
+        # Serializing
+        serialized_location = utils.encode_location_to_json([created_location])[0]
+        return JsonResponse(serialized_location, safe=False, status=201)
+
+    else:
+
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to add a location")
+
+
+def handle_get_locations(request, user):
+    # Checking permissions (possibly needs the permission to see if the badge is related to this user)
+    if user.has_perm('locations.view_location'):
+
+        # Executing query
+        all_locations = queries.get_locations()
+
+        # Serializing
+        serialized_locations = utils.encode_location_to_json(all_locations)
+
+        return JsonResponse(serialized_locations, safe=False)
+
+    else:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view locations")
+
+
+def handle_get_location(request, uuid, user):
+    # Checking permissions
+    if user.has_perm('locations.view_location'):
+
+        # Executing the query
+        try:
+            selected_location = queries.get_location_by_uuid(uuid)
+        except Location.DoesNotExist:
+            return HttpResponse(status=400, reason="Bad request: No Location with that UUID")
+
+        # Serializing
+        serialized_location = utils.encode_location_to_json([selected_location])[0]
+
+        return JsonResponse(serialized_location, safe=False)
+
+    else:
+
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view this location")
+
+
+def handle_patch_location(request, uuid, user):
+    try:
+        location_to_patch = queries.get_location_by_uuid(uuid)
+    except Location.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
+
+    # Checking if it's admin or the manager that created the location
+    if not user.has_perm('locations.change_location') and location_to_patch.manager.user != user:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to delete this location")
+
+    # Unserializing
+    try:
+        unserialized_patch_location = utils.decode_location_from_json(request.body,
+                                                                      user.has_perm('locations.change_location'))
+    except utils.InvalidJSONData:
+        return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
+
+    # Executing query
+    try:
+        updated_location = queries.patch_location_by_uuid(uuid, unserialized_patch_location)
+
+    except queries.NotAValidImage as e:
+        return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
+
+    # Serializing
+    serialized_location = utils.encode_location_to_json([updated_location])[0]
+    return JsonResponse(serialized_location, safe=False)
+
+
+def handle_delete_location(request, uuid, user):
+    # Checking permissions
+    try:
+        location = queries.get_location_by_uuid(uuid)
+
+        # Checking if it's admin or the manager that created the location
+        if not user.has_perm('locations.delete_location') and location.manager.user != user:
+            return HttpResponse(status=403,
+                                reason="Forbidden: Current user does not have the permission"
+                                       " required to delete this location")
+
+    except Location.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
+
+    # Executing query
+    success = queries.delete_location_by_uuid(uuid)
+    if success:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=400, reason="Bad request: Failed to delete")

@@ -4,7 +4,7 @@ from django.db import models
 from django.utils import timezone
 
 from locations.models import Location
-from users.models import PromoterUser
+from users.models import AppUser, PromoterUser
 
 
 class Status(models.TextChoices):
@@ -21,5 +21,15 @@ class Badge(models.Model):
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True)
-    location = models.ForeignKey(Location, on_delete=models.CASCADE)
-    promoter = models.ForeignKey(PromoterUser, on_delete=models.CASCADE)
+    location = models.ForeignKey(Location, on_delete=models.RESTRICT)
+    promoter = models.ForeignKey(PromoterUser, on_delete=models.RESTRICT)
+
+    class Meta:
+        permissions = (
+            ('redeem_badge', 'Can redeem Badge'),
+        )
+
+
+class RedeemedBadges(models.Model):
+    app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)

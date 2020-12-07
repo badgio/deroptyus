@@ -1,14 +1,14 @@
+import pyrebase
 from django.conf import settings
 from django.contrib.auth.models import Group, Permission
 from django.core.management import call_command
 from django.test import Client
 from django.test import TestCase
 from firebase_admin import auth
-import pyrebase
 
 from firebase.auth import FirebaseBackend
 from firebase.models import FirebaseUser
-from .models import AppUser, ManagerUser, PromoterUser, User
+from .models import AppUser, ManagerUser, PromoterUser, User, AdminUser
 
 
 class UsersTestCase(TestCase):
@@ -19,20 +19,39 @@ class UsersTestCase(TestCase):
         # Making sure the DB has the correct permission groups
         call_command('validatepermissions')
 
-        client = Client()
+        # Signing in without creating user
+        if (type == "mobile" and AppUser.objects.filter(email=email).count()) or \
+                (type == "managers" and ManagerUser.objects.filter(email=email).count()) or \
+                (type == "promoters" and PromoterUser.objects.filter(email=email).count()):
+            return self.pyrebase_app.auth().sign_in_with_email_and_password(email, password)["idToken"]
 
-        # Sending request to create an app user
+        # Logging the user in the Firebase Console and returning the token for authentication
+        client = Client()
         client.post(f'/v0/users/{type}', {
             'email': email,
             'password': password
         }, content_type="application/json")
 
+        return self.pyrebase_app.auth().sign_in_with_email_and_password(email, password)["idToken"]
+
+    def log_in_admin(self, email, password):
+        # Making sure the DB has the correct permission groups
+        call_command('validatepermissions')
+
+        # Signing in without creating user
+        if AdminUser.objects.filter(email=email).count():
+            return self.pyrebase_app.auth().sign_in_with_email_and_password(email=email, password=password)["idToken"]
+
+        # Creating Admin user through the command
+        call_command('createadmin', email, password)
+
         # Logging the user in the Firebase Console and returning the token for authentication
         return self.pyrebase_app.auth().sign_in_with_email_and_password(email=email, password=password)["idToken"]
 
-    def log_out(self, email):
-        # Removing the user from the firebase DB (as it's not temporary)
-        self.firebase_backend.delete_user_by_email(email=email)
+    def log_out(self):
+        # Deleting users from the firebase console (as it's not temporary)
+        for firebase_user in FirebaseUser.objects.all():
+            self.firebase_backend.delete_user_by_id(firebase_user.id)
 
     def test_app_user_creation(self):
         # Making sure the DB has the correct permission groups
@@ -197,6 +216,31 @@ class UsersTestCase(TestCase):
         # Removing the user from the firebase DB (as it's not temporary)
         auth.delete_user(firebase_user.id, app=self.firebase_backend.app)
 
+    def test_admin_user_creation(self):
+        # Making sure the DB has the correct permission groups
+        call_command('validatepermissions')
+
+        email = "admin@test.com"
+        password = "test_password"
+
+        # Creating Admin user through the command
+        call_command('createadmin', email, password)
+
+        # Testing for manager user creation
+        self.assertEqual(AdminUser.objects.filter(email=email).count(), 1)
+        admin = AdminUser.objects.get(email=email)
+
+        # Assert a user was created
+        user = admin.user
+        self.assertIsNotNone(user)
+        self.assertTrue(user.is_superuser)
+
+        # Assert a firebase user was created
+        firebase_user = FirebaseUser.objects.get(user=user)
+
+        # Removing the user from the firebase DB (as it's not temporary)
+        auth.delete_user(firebase_user.id, app=self.firebase_backend.app)
+
     def test_apper_group_permissions(self):
         # Making sure the DB has the correct permission groups
         call_command('validatepermissions')
@@ -209,6 +253,7 @@ class UsersTestCase(TestCase):
         appers_permission_codenames = [
             'view_location',
             'view_badge',
+            'redeem_badge',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=appers_permission_codenames).all(),
                             appers_group.permissions.all())
@@ -261,3 +306,32 @@ class UsersTestCase(TestCase):
         for promoter in PromoterUser.objects.all():
             user = User.objects.get(promoter.user)
             self.assertIn(promoters_group, user.groups.all())
+
+    def test_admin_group_permissions(self):
+        # Making sure the DB has the correct permission groups
+        call_command('validatepermissions')
+
+        # Making sure there is a Permission Group created for the Promoter Users
+        admins_group = Group.objects.get(name="admins_permission_group")
+        self.assertIsNotNone(admins_group)
+
+        # Making the Group has the correct permissions
+        admins_permission_codenames = [
+            'view_location',
+            'change_location',
+            'delete_location',
+            'view_badge',
+            'change_location',
+            'delete_location',
+            'add_tag',
+            'view_tag',
+            'change_tag',
+            'delete_tag',
+        ]
+        self.assertSetEqual(Permission.objects.filter(codename__in=admins_permission_codenames).all(),
+                            admins_group.permissions.all())
+
+        # Making sure every Promoter User is in the Promoter Users group
+        for admin in AdminUser.objects.all():
+            user = User.objects.get(admin.user)
+            self.assertIn(admins_group, user.groups.all())

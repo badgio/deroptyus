@@ -42,6 +42,28 @@ class FirebaseBackend(BaseBackend):
 
         return firebase_user.uid
 
+    def get_user_by_id(self, user_id):
+        try:
+            firebase_user = auth.get_user(user_id)
+        except Exception:
+            return None
+
+        return firebase_user
+
+    def get_user_by_email(self, email):
+        try:
+            firebase_user = auth.get_user_by_email(email)
+        except auth.UserNotFoundError:
+            return None
+
+        return firebase_user.uid
+
+    def delete_user_by_id(self, user_id):
+        try:
+            auth.delete_user(user_id)
+        except Exception:
+            pass
+
     def delete_user_by_email(self, email):
         try:
             firebase_user = auth.get_user_by_email(email)

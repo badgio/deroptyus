@@ -35,7 +35,7 @@ class AppUser(models.Model):
     country = models.CharField(max_length=255, null=True)
     city = models.CharField(max_length=255, null=True)
     gender = models.CharField(max_length=255, null=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False)
 
     def __str__(self):
         return str(self.email)
@@ -44,7 +44,7 @@ class AppUser(models.Model):
 class ManagerUser(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False)
 
     def __str__(self):
         return str(self.email)
@@ -53,7 +53,16 @@ class ManagerUser(models.Model):
 class PromoterUser(models.Model):
     email = models.EmailField(max_length=255, unique=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, editable=False)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False)
+
+    def __str__(self):
+        return str(self.email)
+
+
+class AdminUser(models.Model):
+    email = models.EmailField(max_length=255, unique=True)
+    date_joined = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, editable=False)
 
     def __str__(self):
         return str(self.email)
