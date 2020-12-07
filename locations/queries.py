@@ -2,8 +2,9 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
 from users.models import ManagerUser
-from .models import Location
 from . import utils
+from .models import Location
+
 
 def create_location(location, user_id):
     # Creating Location

@@ -1,6 +1,4 @@
-from base64 import b64decode
 from datetime import datetime
-from mimetypes import guess_extension
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage

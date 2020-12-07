@@ -7,7 +7,7 @@ from django.core import serializers
 from .models import Status
 
 
-def decode_image_from_base64 (base64_image, filename):
+def decode_image_from_base64(base64_image, filename):
     try:
         # Accepted format: data:<mime_type>;base64,<encoding>
         img_format, img_str = base64_image.split(';base64,')
@@ -26,12 +26,13 @@ def decode_image_from_base64 (base64_image, filename):
     except Exception as e:
         raise NotAValidImage(e)
 
-def encode_image_to_base64 (image, filename):
 
+def encode_image_to_base64(image, filename):
     # Encoding image to base64
     encoded_img = b64encode(image).decode('utf-8')
     # Sending image with Data URI format
     return f'data:{guess_type(filename)[0]};base64,{encoded_img}'
+
 
 def encode_location_to_json(locations):
     serialized_locations = json.loads(serializers.serialize("json",
@@ -53,7 +54,6 @@ def encode_location_to_json(locations):
             image_data = open(location_fields['image'], 'rb').read()
             # Encoding it
             location_fields['image'] = encode_image_to_base64(image_data, location_fields.get('image'))
-
 
         image_serialized_locations.append(location_fields)
 
