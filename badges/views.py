@@ -240,6 +240,9 @@ def handle_redeem_badge(request, user):
                 return HttpResponse(status=400,
                                     reason="Bad Request: No Badge associated with the Location of the Tag")
 
+        except tags_queries.NotAValidTagUID:
+            return HttpResponse(status=404,
+                                reason="Not Found: No Tag by that UID")
         except tags_queries.AlreadyRedeemedTag:
             return HttpResponse(status=400,
                                 reason="Bad Request: The info provided refers to an already redeemed tag")

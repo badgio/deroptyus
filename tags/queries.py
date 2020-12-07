@@ -52,8 +52,10 @@ def redeem_tag(redeem_info):
         raise MissingRedeemInfo(f"Missing: {[field for field in required_fields not in redeem_info]}")
 
     # TO BE COMPLETED -> CHECKING IF TAG IS VALID THROUGH CMAC
-
-    tag = Tag.objects.get(uid=redeem_info.get('uid'))
+    try:
+        tag = Tag.objects.get(uid=redeem_info.get('uid'))
+    except Tag.DoesNotExist:
+        raise NotAValidTagUID()
 
     # Updating last_counter if it's the next in line
     if redeem_info.get('counter') == tag.last_counter + 1:
@@ -83,6 +85,10 @@ def redeem_tag(redeem_info):
 
 
 class NotAValidLocation(Exception):
+    pass
+
+
+class NotAValidTagUID(Exception):
     pass
 
 
