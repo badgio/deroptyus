@@ -1,12 +1,38 @@
 import json
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from datetime import datetime
-from mimetypes import guess_type
+from mimetypes import guess_type, guess_extension
 
 from django.core import serializers
 
 from .models import Status
 
+
+def decode_image_from_base64 (base64_image, filename):
+    try:
+        # Accepted format: data:<mime_type>;base64,<encoding>
+        img_format, img_str = base64_image.split(';base64,')
+        _, mime_type = img_format.split(':')
+
+        # If MIME type is not image
+        if mime_type.split("/")[0] != "image":
+            raise NotAValidImage()
+
+        # Decoding image from base64
+        decoded_img = b64decode(img_str)
+        # Getting extension from MIME type
+        file_extension = guess_extension(mime_type)
+        # Storing image
+        return decoded_img, f'{filename}.{file_extension}'
+    except Exception as e:
+        raise NotAValidImage(e)
+
+def encode_image_to_base64 (image, filename):
+
+    # Encoding image to base64
+    encoded_img = b64encode(image).decode('utf-8')
+    # Sending image with Data URI format
+    return f'data:{guess_type(filename)[0]};base64,{encoded_img}'
 
 def encode_badge_to_json(badges):
     serialized_badges = json.loads(serializers.serialize("json",
@@ -23,10 +49,10 @@ def encode_badge_to_json(badges):
         badge_fields = serialized["fields"]
 
         if badge_fields.get('image'):
-            # Encoding image to base64
-            decoded_img = b64encode(open(badge_fields['image'], 'rb').read()).decode('utf-8')
-            # Sending image with Data URI format
-            badge_fields['image'] = f'data:{guess_type(badge_fields["image"])[0]};base64,{decoded_img}'
+            # Getting image data from storage
+            image_data = open(badge_fields['image'], 'rb').read()
+            # Encoding it
+            badge_fields['image'] = encode_image_to_base64(image_data, badge_fields.get('image'))
 
         image_serialized_badges.append(badge_fields)
 
@@ -73,4 +99,8 @@ class NotAValidEndDate(Exception):
 
 
 class InvalidJSONData(Exception):
+    pass
+
+
+class NotAValidImage(Exception):
     pass

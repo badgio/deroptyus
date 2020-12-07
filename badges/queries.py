@@ -8,6 +8,7 @@ from django.db.models import Q
 
 from locations.models import Location
 from users.models import PromoterUser, AppUser
+from . import utils
 from .models import Badge, RedeemedBadges
 
 
@@ -30,23 +31,10 @@ def create_badge(badge, user_id):
     badge_created.status = badge.get("status")
 
     if badge.get("image"):
-        try:
-            # Accepted format: data:<mime_type>;base64,<encoding>
-            img_format, img_str = badge.get("image").split(';base64,')
-            _, mime_type = img_format.split(':')
-
-            # If MIME type is not image
-            if mime_type.split("/")[0] != "image":
-                raise NotAValidImage()
-
-            # Decoding image from base64
-            decoded_img = b64decode(img_str)
-            # Getting extension from MIME type
-            file_extension = guess_extension(mime_type)
-            # Storing image
-            badge_created.image = ContentFile(decoded_img, name=str(badge_created.uuid) + '.' + file_extension)
-        except Exception:
-            raise NotAValidImage()
+        # Decoding image from base64
+        decoded_img, filename = utils.decode_image_from_base64(badge.get("image"), str(badge_created.uuid))
+        # Storing image
+        badge_created.image = ContentFile(decoded_img, name=filename)
 
     try:
         badge_created.location = Location.objects.get(uuid=badge.get('location'))
@@ -125,26 +113,12 @@ def patch_badge_by_uuid(badge_uuid, badge):
             raise NotAValidLocation()
 
     if badge.get("image"):
-        try:
-            # Accepted format: data:<mime_type>;base64,<encoding>
-            img_format, img_str = badge.get("image").split(';base64,')
-            _, mime_type = img_format.split(':')
-
-            # If MIME type is not image
-            if mime_type.split("/")[0] != "image":
-                raise NotAValidImage()
-
-            # Decoding image from base64
-            decoded_img = b64decode(img_str)
-
-            # Deleting previous image from storage
-            default_storage.delete(badge.image.path)
-            # Getting extension from MIME type
-            file_extension = guess_extension(mime_type)
-            # Storing image
-            badge_update.image = ContentFile(decoded_img, name=str(badge_update.uuid) + '.' + file_extension)
-        except Exception:
-            raise NotAValidImage()
+        # Decoding image from base64
+        decoded_img, filename = utils.decode_image_from_base64(badge.get("image"), str(badge_update.uuid))
+        # Deleting previous image from storage
+        default_storage.delete(badge_update.image.path)
+        # Storing image
+        badge_update.image = ContentFile(decoded_img, name=filename)
 
     badge_update.save()
 
@@ -152,10 +126,6 @@ def patch_badge_by_uuid(badge_uuid, badge):
 
 
 class NotAValidLocation(Exception):
-    pass
-
-
-class NotAValidImage(Exception):
     pass
 
 
