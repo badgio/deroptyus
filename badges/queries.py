@@ -53,7 +53,7 @@ def redeem_badges_by_location(location_uuid, user_id):
     # Getting all badges that are associated with a location and are "up"
     redeemable_badges = Badge.objects.filter(Q(location=location_uuid),
                                              Q(start_date__lte=datetime.now()),
-                                             Q(end_date__isnull=-True) | Q(end_date__gte=datetime.now()))
+                                             Q(end_date__isnull=True) | Q(end_date__gte=datetime.now()))
 
     # Getting app user that's redeeming the badge
     apper = AppUser.objects.get(user_id=user_id)
