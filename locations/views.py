@@ -80,7 +80,7 @@ def handle_create_location(request, user):
 
             created_location = queries.create_location(unserialized_location, user.id)
 
-        except queries.NotAValidImage:
+        except utils.NotAValidImage:
             return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
 
         # Serializing
@@ -157,7 +157,7 @@ def handle_patch_location(request, uuid, user):
     try:
         updated_location = queries.patch_location_by_uuid(uuid, unserialized_patch_location)
 
-    except queries.NotAValidImage as e:
+    except utils.NotAValidImage as e:
         return HttpResponse(status=400, reason=f"Bad Request: Invalid image provided {e}")
 
     # Serializing

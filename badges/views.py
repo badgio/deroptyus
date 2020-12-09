@@ -106,7 +106,7 @@ def handle_create_badge(request, user):
 
         except queries.NotAValidLocation:
             return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
-        except queries.NotAValidImage:
+        except utils.NotAValidImage:
             return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
         except queries.EndDateNotAfterStartDate:
             return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
@@ -184,7 +184,7 @@ def handle_patch_badge(request, uuid, user):
     try:
         updated_badge = queries.patch_badge_by_uuid(uuid, unserialized_patch_badge)
 
-    except queries.NotAValidImage:
+    except utils.NotAValidImage:
         return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
     except queries.NotAValidLocation:
         return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
