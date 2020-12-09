@@ -6,6 +6,8 @@ class UserManager(BaseUserManager):
     def create_user(self, **extra_fields):
         user = self.model(**extra_fields)
 
+        user.save()
+
         return user
 
     def create_superuser(self, password, **extra_fields):

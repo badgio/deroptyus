@@ -7,7 +7,7 @@ from users.tests import UsersTestCase
 
 class LocationTestCase(TestCase):
 
-    def test_app_location_get_all(self):
+    def test_location_get_all(self):
         """
         Test: Get all locations
         Path: /v0/locations/
@@ -21,7 +21,7 @@ class LocationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Logging out
-        users.log_out(email="manager@test.com")
+        users.log_out()
 
     @staticmethod
     def __create_location__(client):
@@ -52,12 +52,9 @@ class LocationTestCase(TestCase):
 
         response = self.__create_location__(client)
 
-        # Logging out
-        users.log_out(email="manager@test.com")
-
         return json.loads(response.content)["uuid"]
 
-    def test_app_location_create(self):
+    def test_location_create(self):
         """
         Test: Create a new location
         Path: /v0/locations/
@@ -73,9 +70,9 @@ class LocationTestCase(TestCase):
         self.assertEqual(response.status_code, 201)
 
         # Logging out
-        users.log_out(email="manager@test.com")
+        users.log_out()
 
-    def test_app_location_get_with_uuid(self):
+    def test_location_get_with_uuid(self):
         """
         Test: Get a location with UUID
         Path: /v0/locations/uuid
@@ -94,9 +91,9 @@ class LocationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Logging out
-        users.log_out(email="manager@test.com")
+        users.log_out()
 
-    def test_app_location_patch_with_uuid(self):
+    def test_location_patch_with_uuid(self):
         """
         Test: Patch a location with uuid
         Path: /v0/locations/uuid
@@ -122,9 +119,9 @@ class LocationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Logging out
-        users.log_out(email="manager@test.com")
+        users.log_out()
 
-    def test_app_location_delete_with_uuid(self):
+    def test_location_delete_with_uuid(self):
         """
         Test: Delete a location with uuid
         Path: /v0/locations/uuid
@@ -143,4 +140,4 @@ class LocationTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         # Logging out
-        users.log_out(email="manager@test.com")
+        users.log_out()

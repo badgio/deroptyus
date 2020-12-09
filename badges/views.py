@@ -1,13 +1,14 @@
-from base64 import b64encode
-
 from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
+import tags.queries as tags_queries
+import tags.utils as tags_utils
 from firebase.auth import InvalidIdToken, NoTokenProvided
-from users.models import PromoterUser
-from . import queries
+from . import queries, utils
 from .models import Badge
 
+
+# Views
 
 def badges(request):
     # Authenticating user
@@ -21,78 +22,11 @@ def badges(request):
 
     if request.method == 'POST':
 
-        if user.has_perm('badges.add_badge'):
-
-            try:
-                badge = queries.decode_badge(request.body, user.is_superuser)
-
-                if not (badge["name"] and badge["description"]):
-                    return HttpResponse(
-                        status=400, reason="Bad Request: Need name and description")
-
-                # Getting the promoter that's creating the badge
-                promoter = PromoterUser.objects.get(user_id=user)
-
-                created = queries.create_badge(badge, promoter)
-                badge_serialize = queries.encode_badge([created])[0]["fields"]
-
-                return JsonResponse(badge_serialize, status=201)
-
-            except queries.NotAValidLocation:
-                return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
-
-            except queries.NotAValidImage:
-                return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
-
-            except queries.NotAValidStartDate:
-                return HttpResponse(status=400, reason="Bad Request: Starting date format must be: "
-                                                       "YYYY-MM-DDTHH:MM:SS")
-            except queries.NotAValidEndDate:
-                return HttpResponse(status=400, reason="Bad Request: Ending date format must be: "
-                                                       "YYYY-MM-DDTHH:MM:SS")
-            except queries.EndDateNotAfterStartDate:
-                return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
-
-            except Exception as e:
-                return HttpResponse(status=400, reason=f"Bad Request: Could not post Badges {e}")
-
-        else:
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to add a badge")
+        return handle_create_badge(request, user)
 
     elif request.method == 'GET':
 
-        # Possibly needs the permission to see if the badge is related to this user
-        if user.has_perm('badges.view_badge'):
-
-            try:
-
-                all_badge = queries.get_badge()
-                badge_serialize = queries.encode_badge(all_badge)
-
-                to_return = []
-                for i in badge_serialize:
-
-                    current = i["fields"]
-
-                    if current['image']:
-                        encoder = b64encode(open(current['image'], 'rb').read())
-                        current['image'] = encoder.decode('utf-8')
-
-                    to_return.append(current)
-
-                return JsonResponse(to_return, safe=False)
-
-            except Exception as e:
-                return HttpResponse(status=400, reason=f"Bad Request: Could not get Badges {e}")
-
-        else:
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to view badges")
+        return handle_get_badges(request, user)
 
     else:
 
@@ -103,88 +37,221 @@ def crud_badge(request, uuid):
     # Authenticating user
     try:
         user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
     except (InvalidIdToken, NoTokenProvided):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
     if request.method == 'GET':
 
-        if user.has_perm('badges.view_badge'):
-
-            try:
-                get_badge = queries.get_badge_by_uuid(uuid)
-
-                badge_serialize = queries.encode_badge([get_badge])[0]["fields"]
-                return JsonResponse(badge_serialize)
-
-            except Badge.DoesNotExist:
-                return HttpResponse(status=400, reason="Bad request: Error no badge with that UUID")
-
-            except Exception as e:
-                return HttpResponse(status=400, reason=f"Bad request: Error on Get {e}")
-
-        else:
-
-            return HttpResponse(status=403,
-                                reason="Forbidden: Current user does not have the permission"
-                                       " required to view this badge")
-
-    elif request.method == 'DELETE':
-
-        try:
-
-            badge = queries.get_badge_by_uuid(uuid)
-
-            # Checking if it's admin or the promoter that created the badge
-            if not user.is_superuser and badge.promoter.user != user:
-                return HttpResponse(status=403,
-                                    reason="Forbidden: Current user does not have the permission"
-                                           " required to delete this badge")
-
-            result = queries.delete_badge_by_uuid(uuid)
-            if result:
-                return HttpResponse(status=200)
-            else:
-                return HttpResponse(status=400, reason="Bad request: Failed to delete")
-
-        except Badge.DoesNotExist:
-            return HttpResponse(status=404, reason="Not Found: No badge by that UUID")
-
-        except Exception as e:
-            return HttpResponse(status=400, reason=f"Bad request: Error on Delete {e}")
+        return handle_get_badge(request, uuid, user)
 
     elif request.method == 'PATCH':
 
-        try:
+        return handle_patch_badge(request, uuid, user)
 
-            badge = queries.get_badge_by_uuid(uuid)
+    elif request.method == 'DELETE':
 
-            # Checking if it's admin or the promoter that created the badge
-            if not user.is_superuser and badge.promoter.user != user:
-                return HttpResponse(status=403,
-                                    reason="Forbidden: Current user does not have the permission"
-                                           " required to delete this badge")
-
-            patch_badge = queries.decode_badge(request.body, user.is_superuser)
-            patch_badge['uuid'] = uuid
-
-            updated = queries.patch_badge_by_uuid(uuid, patch_badge)
-            badge_serialize = queries.encode_badge([updated])[0]["fields"]
-
-            return JsonResponse(badge_serialize)
-
-        except Badge.DoesNotExist:
-            return HttpResponse(status=404, reason="Not Found: No badge by that UUID")
-
-        except queries.NotAValidImage:
-            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
-
-        except queries.NotAValidLocation:
-            return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
-
-        except Exception as e:
-            return HttpResponse(status=400, reason=f"Bad Request: Could not update badges {e}")
+        return handle_delete_badge(request, uuid, user)
 
     else:
 
-        return HttpResponseNotAllowed(['PATCH', 'DELETE', 'GET'])
+        return HttpResponseNotAllowed(['GET', 'PATCH', 'DELETE'])
+
+
+def redeem(request):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == 'POST':
+
+        return handle_redeem_badge(request, user)
+
+    else:
+        return HttpResponseNotAllowed(['POST'])
+
+
+# Auxiliary functions for the Views
+
+def handle_create_badge(request, user):
+    # Checking permissions
+    if user.has_perm('badges.add_badge'):
+
+        # Unserializing
+        try:
+            unserialized_badge = utils.decode_badge_from_json(request.body, False)
+
+            # Required fields
+            if not unserialized_badge.get("name") or not unserialized_badge.get("description"):
+                return HttpResponse(status=400, reason="Bad Request: Name and Description must be provided")
+
+        except utils.NotAValidStartDate:
+            return HttpResponse(status=400, reason="Bad Request: Starting date format must be: "
+                                                   "YYYY-MM-DDTHH:MM:SS")
+        except utils.NotAValidEndDate:
+            return HttpResponse(status=400, reason="Bad Request: Ending date format must be: "
+                                                   "YYYY-MM-DDTHH:MM:SS")
+        except utils.InvalidJSONData:
+            return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
+
+        # Executing the query
+        try:
+
+            created_badge = queries.create_badge(unserialized_badge, user.id)
+
+        except queries.NotAValidLocation:
+            return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
+        except utils.NotAValidImage:
+            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
+        except queries.EndDateNotAfterStartDate:
+            return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
+
+        # Serializing
+        serialized_badge = utils.encode_badge_to_json([created_badge])[0]
+        return JsonResponse(serialized_badge, safe=False, status=201)
+
+    else:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to add a badge")
+
+
+def handle_get_badges(request, user):
+    # Checking permissions (possibly needs the permission to see if the badge is related to this user)
+    if user.has_perm('badges.view_badge'):
+
+        # Executing the query
+        all_badges = queries.get_badges()
+
+        # Serializing
+        serialized_badges = utils.encode_badge_to_json(all_badges)
+
+        return JsonResponse(serialized_badges, safe=False)
+
+    else:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view badges")
+
+
+def handle_get_badge(request, uuid, user):
+    # Checking permissions
+    if user.has_perm('badges.view_badge'):
+
+        # Executing the query
+        try:
+            selected_badge = queries.get_badge_by_uuid(uuid)
+        except Badge.DoesNotExist:
+            return HttpResponse(status=400, reason="Bad request: Error no badge with that UUID")
+
+        # Serializing
+        serialized_badge = utils.encode_badge_to_json([selected_badge])[0]
+
+        return JsonResponse(serialized_badge, safe=False)
+
+    else:
+
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view this badge")
+
+
+def handle_patch_badge(request, uuid, user):
+    try:
+        badge_to_patch = queries.get_badge_by_uuid(uuid)
+    except Badge.DoesNotExist:
+        return HttpResponse(status=404, reason="Bad request: Error no badge with that UUID")
+
+    # Checking if it's admin or the promoter that created the badge
+    if not user.has_perm('badges.change_badge') and badge_to_patch.promoter.user != user:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to delete this badge")
+
+    # Unserializing
+    try:
+        unserialized_patch_badge = utils.decode_badge_from_json(request.body,
+                                                                user.has_perm('badges.change_badge'))
+    except utils.InvalidJSONData:
+        return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
+
+    # Executing query
+    try:
+        updated_badge = queries.patch_badge_by_uuid(uuid, unserialized_patch_badge)
+
+    except utils.NotAValidImage:
+        return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
+    except queries.NotAValidLocation:
+        return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
+    except queries.StartDateAfterEndDate:
+        return HttpResponse(status=400, reason="Bad Request: Starting date must be before the Ending date")
+    except queries.EndDateNotAfterStartDate:
+        return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
+
+    # Serializing
+    serialized_badge = utils.encode_badge_to_json([updated_badge])[0]
+    return JsonResponse(serialized_badge, safe=False)
+
+
+def handle_delete_badge(request, uuid, user):
+    # Checking permissions
+    try:
+        badge = queries.get_badge_by_uuid(uuid)
+
+        # Checking if it's admin or the promoter that created the badge
+        if not user.has_perm('badges.delete_badge') and badge.promoter.user != user:
+            return HttpResponse(status=403,
+                                reason="Forbidden: Current user does not have the permission"
+                                       " required to delete this badge")
+
+    except Badge.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No badge by that UUID")
+
+    # Exectuing query
+    success = queries.delete_badge_by_uuid(uuid)
+    if success:
+        return HttpResponse(status=200)
+    else:
+        return HttpResponse(status=400, reason="Bad request: Failed to delete")
+
+
+def handle_redeem_badge(request, user):
+    # Checking permissions
+    if user.has_perm('badges.redeem_badge'):
+
+        # Unserializing
+        try:
+            unserialized_redeem_info = tags_utils.decode_redeem_info_from_json(request.body)
+        except tags_queries.MissingRedeemInfo as e:
+            return HttpResponse(status=400, reason=f"Bad Request: Info not sufficient to redeem tag - {e}")
+
+        # Executing query
+        try:
+            location_id = tags_queries.redeem_tag(unserialized_redeem_info)
+
+            valid_badges = queries.redeem_badges_by_location(location_id, user.id)
+
+            if not valid_badges.count():
+                return HttpResponse(status=400,
+                                    reason="Bad Request: No Badge associated with the Location of the Tag")
+
+        except tags_queries.NotAValidTagUID:
+            return HttpResponse(status=404,
+                                reason="Not Found: No Tag by that UID")
+        except tags_queries.AlreadyRedeemedTag:
+            return HttpResponse(status=400,
+                                reason="Bad Request: The info provided refers to an already redeemed tag")
+
+        # Serializing
+        serialized_badges = utils.encode_badge_to_json(valid_badges)
+        return JsonResponse(serialized_badges, safe=False)
+
+    else:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to redeem a badge")
