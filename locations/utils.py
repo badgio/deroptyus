@@ -4,6 +4,7 @@ from mimetypes import guess_type, guess_extension
 
 from django.core import serializers
 
+from users import queries as user_queries
 from .models import Status
 
 
@@ -42,7 +43,7 @@ def encode_location_to_json(locations):
                                                                 'description', 'website',
                                                                 'latitude', 'longitude',
                                                                 'facebook', 'instagram',
-                                                                'status', 'image', ]))
+                                                                'status', 'image', 'manager']))
 
     image_serialized_locations = []
     for serialized in serialized_locations:
@@ -54,6 +55,9 @@ def encode_location_to_json(locations):
             image_data = open(location_fields['image'], 'rb').read()
             # Encoding it
             location_fields['image'] = encode_image_to_base64(image_data, location_fields.get('image'))
+
+        if location_fields.get('manager'):
+            location_fields['manager'] = user_queries.get_str_by_manager_pk(location_fields.get('manager'))
 
         image_serialized_locations.append(location_fields)
 
