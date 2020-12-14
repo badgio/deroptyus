@@ -79,6 +79,7 @@ def award_reward_to_user(collection_uuid, user_id):
     while True:
         try:
             RedeemableReward.objects.get(reward_code=generated_code)
+            generated_code = ''.join(random.sample(CODE_DIGITS, CODE_LENGTH))
         except RedeemableReward.DoesNotExist:
             break
 
