@@ -31,6 +31,6 @@ class Reward(models.Model):
 
 class RedeemableReward(models.Model):
     reward_code = models.CharField(max_length=6, primary_key=True)
-    time_awarded = models.DateTimeField(auto_now_add=-True, editable=False)
+    time_awarded = models.DateTimeField(auto_now_add=True, editable=False)
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     reward = models.ForeignKey(Reward, on_delete=models.RESTRICT)
