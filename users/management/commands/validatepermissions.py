@@ -31,6 +31,7 @@ class Command(BaseCommand):
             'view_location',
             'view_badge',
             'redeem_badge',
+            'redeem_reward',
         ]
 
         # Clearing previous permissions
@@ -78,6 +79,8 @@ class Command(BaseCommand):
             'view_location',
             'add_badge',
             'view_badge',
+            'add_reward',
+            'view_reward'
         ]
 
         # Clearing previous permissions
@@ -108,6 +111,9 @@ class Command(BaseCommand):
             'view_tag',
             'change_tag',
             'delete_tag',
+            'view_reward',
+            'change_reward',
+            'delete_reward',
         ]
 
         # Clearing previous permissions

@@ -24,3 +24,6 @@ class Location(models.Model):
     instagram = models.CharField(max_length=255, null=True)
     facebook = models.CharField(max_length=255, null=True)
     manager = models.ForeignKey(ManagerUser, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return str(self.uuid)

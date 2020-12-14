@@ -6,5 +6,6 @@ urlpatterns = [
     path('v0/locations/', include('locations.urls')),
     path('v0/badges/', include('badges.urls')),
     path('v0/tags/', include('tags.urls')),
+    path('v0/rewards/', include('rewards.urls')),
     path('v0/users/', include('users.urls'))
 ]

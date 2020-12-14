@@ -72,6 +72,10 @@ def get_badge_by_uuid(badge_uuid):
     return Badge.objects.get(uuid=badge_uuid)
 
 
+def get_str_by_pk(pk):
+    return str(Badge.objects.get(pk=pk))
+
+
 def delete_badge_by_uuid(badge_uuid):
     badge = get_badge_by_uuid(badge_uuid)
     # Deleting previous image from storage

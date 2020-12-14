@@ -39,6 +39,10 @@ def get_location_by_uuid(location_uuid):
     return Location.objects.get(uuid=location_uuid)
 
 
+def get_str_by_pk(pk):
+    return str(Location.objects.get(pk=pk))
+
+
 def delete_location_by_uuid(location_uuid):
     location = get_location_by_uuid(location_uuid)
     # Deleting previous image from storage

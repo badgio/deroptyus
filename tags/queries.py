@@ -25,6 +25,10 @@ def get_tag_by_uid(tag_uid):
     return Tag.objects.get(uid=tag_uid)
 
 
+def get_str_by_pk(pk):
+    return str(Tag.objects.get(pk=pk))
+
+
 def delete_tag_by_uid(tag_uid):
     return get_tag_by_uid(tag_uid).delete()
 

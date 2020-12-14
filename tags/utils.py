@@ -2,6 +2,9 @@ import json
 
 from django.core import serializers
 
+from locations import queries as location_queries
+from users import queries as user_queries
+
 
 def encode_tag_to_json(tags):
     serialized_tags = json.loads(serializers.serialize("json",
@@ -10,7 +13,20 @@ def encode_tag_to_json(tags):
                                                            'uid', 'last_counter',
                                                            'location', ]))
 
-    return [serialized["fields"] for serialized in serialized_tags]
+    tweaked_serialized_tags = []
+    for serialized in serialized_tags:
+
+        reward_fields = serialized['fields']
+
+        if reward_fields.get('location'):
+            reward_fields['location'] = location_queries.get_str_by_pk(reward_fields.get('location'))
+
+        if reward_fields.get('admin'):
+            reward_fields['admin'] = user_queries.get_str_by_admin_pk(reward_fields.get('admin'))
+
+        tweaked_serialized_tags.append(reward_fields)
+
+    return tweaked_serialized_tags
 
 
 def decode_tag_from_json(data):

@@ -169,6 +169,22 @@ def create_admin_user(email, password):
     return admin_user
 
 
+def get_str_by_app_user_pk(pk):
+    return str(AppUser.objects.get(pk=pk))
+
+
+def get_str_by_manager_pk(pk):
+    return str(ManagerUser.objects.get(pk=pk))
+
+
+def get_str_by_promoter_pk(pk):
+    return str(PromoterUser.objects.get(pk=pk))
+
+
+def get_str_by_admin_pk(pk):
+    return str(AdminUser.objects.get(pk=pk))
+
+
 class AppUserExistsError(Exception):
     pass
 
