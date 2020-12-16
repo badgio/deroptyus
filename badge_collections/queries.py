@@ -2,12 +2,12 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 
 from badges import queries as badges_queries
-from badges.models import RedeemedBadges
+from badges.models import RedeemedBadge
 from rewards import queries as rewards_queries
 from rewards.models import Reward, RedeemableReward
 from users.models import PromoterUser, AppUser
 from . import utils
-from .models import Collection, CollectionBadges
+from .models import Collection, CollectionBadge
 
 
 def create_collection(collection, user_id):
@@ -54,7 +54,7 @@ def create_collection(collection, user_id):
 
     # Associating the badges provided with the successfully created collection
     for badge in badges:
-        CollectionBadges(collection=collection_created, badge=badge).save()
+        CollectionBadge(collection=collection_created, badge=badge).save()
 
     return collection_created
 
@@ -69,7 +69,7 @@ def get_collection_by_uuid(collection_uuid):
 
 def get_collection_badges_uuids_by_collection_uuid(collection_uuid):
     collection = get_collection_by_uuid(collection_uuid)
-    return [collection_badge.badge.uuid for collection_badge in CollectionBadges.objects.filter(collection=collection)]
+    return [collection_badge.badge.uuid for collection_badge in CollectionBadge.objects.filter(collection=collection)]
 
 
 def get_str_by_pk(pk):
@@ -126,7 +126,7 @@ def patch_collection_by_uuid(collection_uuid, collection):
                 raise NotEveryBadgeExists()
 
         # Removing no longer wanted badges
-        for collection_badge in CollectionBadges.objects.filter(collection=collection_uuid):
+        for collection_badge in CollectionBadge.objects.filter(collection=collection_uuid):
             if collection_badge.badge.uuid not in badge_uuids:
                 collection_badge.delete()
 
@@ -134,9 +134,9 @@ def patch_collection_by_uuid(collection_uuid, collection):
         for badge_uuid in badge_uuids:
             badge = badges_queries.get_badge_by_uuid(badge_uuid)
             try:
-                CollectionBadges.objects.get(collection=collection_update, badge=badge)
-            except CollectionBadges.DoesNotExist:
-                CollectionBadges(collection=collection_update, badge=badge).save()
+                CollectionBadge.objects.get(collection=collection_update, badge=badge)
+            except CollectionBadge.DoesNotExist:
+                CollectionBadge(collection=collection_update, badge=badge).save()
 
     # Checking if the collection has a reward
     if collection.get("reward"):
@@ -158,10 +158,10 @@ def get_collection_status(collection_uuid, user_id):
     collection = get_collection_by_uuid(collection_uuid)
 
     # Getting every badge in the collection
-    badges_in_collection = CollectionBadges.objects.filter(collection=collection).values_list('badge', flat=True)
+    badges_in_collection = CollectionBadge.objects.filter(collection=collection).values_list('badge', flat=True)
 
     # Counting the number of badges in  in the collection
-    badges_in_collection_collected = RedeemedBadges.objects.filter(badge__in=badges_in_collection, app_user=apper)
+    badges_in_collection_collected = RedeemedBadge.objects.filter(badge__in=badges_in_collection, app_user=apper)
 
     # Collection status
     collection_status = len(badges_in_collection_collected) / len(badges_in_collection)
@@ -180,7 +180,7 @@ def get_collection_status(collection_uuid, user_id):
 
 def redeem_collections_by_badge(badge, user_id):
     # Creating reward codes for every collection completed
-    for collection_id in CollectionBadges.objects.filter(badge=badge).values_list('collection', flat=True):
+    for collection_id in CollectionBadge.objects.filter(badge=badge).values_list('collection', flat=True):
 
         collection = Collection.objects.get(id=collection_id)
         collection_status, _ = get_collection_status(collection.uuid, user_id)

@@ -33,6 +33,6 @@ class Badge(models.Model):
         )
 
 
-class RedeemedBadges(models.Model):
+class RedeemedBadge(models.Model):
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)

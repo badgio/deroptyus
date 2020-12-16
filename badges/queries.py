@@ -8,7 +8,7 @@ from badge_collections import queries as badge_collections_queries
 from locations.models import Location
 from users.models import PromoterUser, AppUser
 from . import utils
-from .models import Badge, RedeemedBadges
+from .models import Badge, RedeemedBadge
 
 
 def create_badge(badge, user_id):
@@ -122,10 +122,10 @@ def redeem_badges_by_location(location_uuid, user_id):
     # Linking the App User with the Badges
     for redeemable_badge in redeemable_badges:
         try:  # Checking if the user has already redeemed this badge (and if so do nothing)
-            RedeemedBadges.objects.get(app_user=apper, badge=redeemable_badge)
-        except RedeemedBadges.DoesNotExist:
+            RedeemedBadge.objects.get(app_user=apper, badge=redeemable_badge)
+        except RedeemedBadge.DoesNotExist:
             # Redeeming Badge
-            redeemed_badge = RedeemedBadges(app_user=apper, badge=redeemable_badge)
+            redeemed_badge = RedeemedBadge(app_user=apper, badge=redeemable_badge)
             redeemed_badge.save()
             badges_redeemed.append(redeemed_badge.badge)
 
