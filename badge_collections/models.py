@@ -33,6 +33,7 @@ class Collection(models.Model):
             ('check_collection_status', 'Can check completion status of a Collection'),
         )
 
+
 class CollectionBadge(models.Model):
     collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
