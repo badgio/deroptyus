@@ -18,6 +18,7 @@ def create_location(location, user_id):
     location_created.status = location.get("status")
     location_created.facebook = location.get('facebook')
     location_created.instagram = location.get('instagram')
+    location_created.twitter = location.get('twitter')
 
     if location.get("image"):
         # Decoding image from base64
@@ -71,6 +72,8 @@ def patch_location_by_uuid(location_uuid, location):
         location_update.facebook = location.get('facebook')
     if location.get('instagram'):
         location_update.instagram = location.get('instagram')
+    if location.get('twitter'):
+        location_update.twitter = location.get('twitter')
     if location.get("image"):
         # Decoding image from base64
         decoded_img, filename = utils.decode_image_from_base64(location.get("image"), str(location_update.uuid))

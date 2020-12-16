@@ -42,7 +42,7 @@ def encode_location_to_json(locations):
                                                                 'uuid', 'name',
                                                                 'description', 'website',
                                                                 'latitude', 'longitude',
-                                                                'facebook', 'instagram',
+                                                                'facebook', 'instagram', 'twitter',
                                                                 'status', 'image', 'manager']))
 
     image_serialized_locations = []
@@ -76,6 +76,7 @@ def decode_location_from_json(data, admin):
             'image': json_data.get("image"),
             'facebook': json_data.get("facebook"),
             'instagram': json_data.get("instagram"),
+            'twitter': json_data.get("twitter"),
             'status': json_data.get("status") if admin else Status.PENDING,  # Only admin can change status
         }
     except json.JSONDecodeError:
