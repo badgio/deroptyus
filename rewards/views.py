@@ -85,14 +85,19 @@ def handle_create_reward(request, user):
             unserialized_reward = utils.decode_reward_from_json(request.body, False)
 
             # Required fields
-            if not unserialized_reward.get("description"):
-                return HttpResponse(status=400, reason="Bad Request: Description must be provided")
+            if not unserialized_reward.get("name") or not unserialized_reward.get("description"):
+                return HttpResponse(status=400, reason="Bad Request: Name and Description must be provided")
 
         except utils.InvalidJSONData:
             return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
 
         # Executing the query
-        created_reward = queries.create_reward(unserialized_reward, user.id)
+        try:
+
+            created_reward = queries.create_reward(unserialized_reward, user.id)
+
+        except utils.NotAValidImage:
+            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
 
         # Serializing
         serialized_reward = utils.encode_rewards_to_json([created_reward])[0]
@@ -164,7 +169,10 @@ def handle_patch_reward(request, uuid, user):
         return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
 
     # Executing query
-    updated_reward = queries.patch_reward_by_uuid(uuid, unserialized_patch_reward)
+    try:
+        updated_reward = queries.patch_reward_by_uuid(uuid, unserialized_patch_reward)
+    except utils.NotAValidImage:
+        return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
 
     # Serializing
     serialized_reward = utils.encode_rewards_to_json([updated_reward])[0]

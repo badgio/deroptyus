@@ -29,11 +29,13 @@ class BadgeTestCase(TestCase):
     def __create_reward__(client, location=None):
         locations = LocationTestCase()
 
+        name = "Nata"
         description = "Oferta da Nata na compra do Café"
         time_redeem = 30 * 60
 
         # Sending request to create a Badge
         return client.post('/v0/rewards/', {
+            'name': name,
             'description': description,
             'time_redeem': time_redeem,
             'location': location if location else locations.get_location()

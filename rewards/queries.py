@@ -1,7 +1,11 @@
 import random
 from datetime import datetime, timedelta
 
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
+
 from badge_collections import queries as badge_collections_queries
+from badge_collections import utils
 from locations.models import Location
 from users.models import PromoterUser, AppUser
 from .models import Reward, RedeemableReward
@@ -14,6 +18,7 @@ def create_reward(reward, user_id):
     # Creating reward
     reward_created = Reward()
 
+    reward_created.name = reward.get('name')
     reward_created.description = reward.get('description')
 
     if "time_redeem" in reward:
@@ -25,6 +30,12 @@ def create_reward(reward, user_id):
         reward_created.location = Location.objects.get(uuid=reward.get('location'))
     except Location.DoesNotExist:
         raise NotAValidLocation()
+
+    if reward.get("image"):
+        # Decoding image from base64
+        decoded_img, filename = utils.decode_image_from_base64(reward.get("image"), str(reward_created.uuid))
+        # Storing image
+        reward_created.image = ContentFile(decoded_img, name=filename)
 
     reward_created.promoter = PromoterUser.objects.get(user_id=user_id)
     reward_created.save()
@@ -56,6 +67,8 @@ def patch_reward_by_uuid(reward_uuid, reward):
     # Getting reward to update
     reward_update = get_reward_by_uuid(reward_uuid)
     # Updating provided fields
+    if reward.get('name'):
+        reward_update.name = reward.get('name')
     if reward.get('description'):
         reward_update.description = reward.get('description')
     if reward.get('status'):
@@ -65,6 +78,13 @@ def patch_reward_by_uuid(reward_uuid, reward):
             reward_update.location = Location.objects.get(uuid=reward.get('location'))
         except Location.DoesNotExist:
             raise NotAValidLocation()
+    if reward.get("image"):
+        # Decoding image from base64
+        decoded_img, filename = utils.decode_image_from_base64(reward.get("image"), str(reward_update.uuid))
+        # Deleting previous image from storage
+        default_storage.delete(reward_update.image.path)
+        # Storing image
+        reward_update.image = ContentFile(decoded_img, name=filename)
 
     reward_update.save()
 
