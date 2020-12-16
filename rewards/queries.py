@@ -1,6 +1,7 @@
 import random
 from datetime import datetime, timedelta
 
+from badge_collections import queries as badge_collections_queries
 from locations.models import Location
 from users.models import PromoterUser, AppUser
 from .models import Reward, RedeemableReward
@@ -39,6 +40,10 @@ def get_reward_by_uuid(reward_uuid):
     return Reward.objects.get(uuid=reward_uuid)
 
 
+def get_reward_by_pk(reward_id):
+    return Reward.objects.get(id=reward_id)
+
+
 def get_str_by_pk(pk):
     return str(Reward.objects.get(pk=pk))
 
@@ -67,12 +72,16 @@ def patch_reward_by_uuid(reward_uuid, reward):
 
 
 def award_reward_to_user(collection_uuid, user_id):
-    # Getting app user that
+    # Getting app user
     apper = AppUser.objects.get(user_id=user_id)
 
+    # Getting the collection
+    collection = badge_collections_queries.get_collection_by_uuid(collection_uuid)
+
     # Getting the reward that is associated with the collection
-    # redeemable_reward = Collection.objects.get(uuid=collection_uuid).reward
-    redeemable_reward = Reward.objects.first()  # PLACEHOLDER !!! Should use the above when Collection is implemented
+    reward_to_redeem = collection.reward
+    if not reward_to_redeem:
+        return
 
     # Generating a unique code
     generated_code = ''.join(random.sample(CODE_DIGITS, CODE_LENGTH))
@@ -86,7 +95,20 @@ def award_reward_to_user(collection_uuid, user_id):
     # Associating reward with the App User that redeemed it
     RedeemableReward(reward_code=generated_code,
                      app_user=apper,
-                     reward=redeemable_reward).save()
+                     reward=reward_to_redeem).save()
+
+
+def get_redeemable_award_by_collection_user(collection_uuid, user_id):
+    # Getting the App User
+    apper = AppUser.objects.get(user_id=user_id)
+
+    # Getting the Reward associated with the Collection
+    reward = badge_collections_queries.get_collection_by_uuid(collection_uuid).reward
+
+    if not reward:
+        return None
+
+    return RedeemableReward.objects.get(app_user=apper, reward=reward)
 
 
 def redeem_reward_by_code(redeem_reward_info):

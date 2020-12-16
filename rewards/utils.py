@@ -7,7 +7,7 @@ from users import queries as user_queries
 from .models import Status
 
 
-def encode_reward_to_json(rewards):
+def encode_rewards_to_json(rewards):
     serialized_rewards = json.loads(serializers.serialize("json",
                                                           rewards,
                                                           fields=[
