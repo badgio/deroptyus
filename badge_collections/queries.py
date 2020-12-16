@@ -78,10 +78,15 @@ def get_str_by_pk(pk):
 
 def delete_collection_by_uuid(collection_uuid):
     collection = get_collection_by_uuid(collection_uuid)
-    # Deleting previous image from storage
-    if collection.image:
-        default_storage.delete(collection.image.path)
-    return collection.delete()
+    # Trying to delete collection
+    try:
+        collection.delete()
+        # Deleting collection image
+        if collection.image:
+            default_storage.delete(collection.image.path)
+    except Exception:
+        return False  # Couldn't delete
+    return True
 
 
 def patch_collection_by_uuid(collection_uuid, collection):

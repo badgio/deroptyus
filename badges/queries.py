@@ -60,10 +60,15 @@ def get_str_by_pk(pk):
 
 def delete_badge_by_uuid(badge_uuid):
     badge = get_badge_by_uuid(badge_uuid)
-    # Deleting previous image from storage
-    if badge.image:
-        default_storage.delete(badge.image.path)
-    return badge.delete()
+    # Trying to delete badge
+    try:
+        badge.delete()
+        # Deleting badge image
+        if badge.image:
+            default_storage.delete(badge.image.path)
+    except Exception:
+        return False  # Couldn't delete
+    return True
 
 
 def patch_badge_by_uuid(badge_uuid, badge):

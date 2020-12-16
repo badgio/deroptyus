@@ -46,10 +46,15 @@ def get_str_by_pk(pk):
 
 def delete_location_by_uuid(location_uuid):
     location = get_location_by_uuid(location_uuid)
-    # Deleting previous image from storage
-    if location.image:
-        default_storage.delete(location.image.path)
-    return location.delete()
+    # Trying to delete location
+    try:
+        location.delete()
+        # Deleting location image
+        if location.image:
+            default_storage.delete(location.image.path)
+    except Exception:
+        return False  # Couldn't delete
+    return True
 
 
 def patch_location_by_uuid(location_uuid, location):
