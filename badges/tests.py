@@ -45,6 +45,16 @@ class BadgeTestCase(TestCase):
             'location': location if location else locations.get_location()
         }, content_type="application/json")
 
+    def get_badge(self):
+        # Logging in
+        users = UsersTestCase()
+        auth_token = users.log_in(type="promoters", email="promoter@test.com", password="test_password")
+        client = Client(HTTP_AUTHORIZATION=auth_token)
+
+        response = self.__create_badge__(client)
+
+        return json.loads(response.content)["uuid"]
+
     def test_badge_create(self):
         """
         Test: Create a new badge

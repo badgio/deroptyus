@@ -3,8 +3,9 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
-from locations.models import Location
-from users.models import AppUser, PromoterUser
+from badges.models import Badge
+from rewards.models import Reward
+from users.models import PromoterUser
 
 
 class Status(models.TextChoices):
@@ -13,26 +14,26 @@ class Status(models.TextChoices):
     PENDING = "PENDING", "Pending Approval"
 
 
-class Badge(models.Model):
+class Collection(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.ImageField(upload_to='upload/badges/', null=True)
+    image = models.ImageField(upload_to='upload/collections/', null=True)
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True)
-    location = models.ForeignKey(Location, on_delete=models.RESTRICT)
     promoter = models.ForeignKey(PromoterUser, on_delete=models.RESTRICT)
+    reward = models.ForeignKey(Reward, on_delete=models.RESTRICT, null=True)
 
     def __str__(self):
         return str(self.uuid)
 
     class Meta:
         permissions = (
-            ('redeem_badge', 'Can redeem Badge'),
+            ('check_collection_status', 'Can check completion status of a Collection'),
         )
 
 
-class RedeemedBadge(models.Model):
-    app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+class CollectionBadge(models.Model):
+    collection = models.ForeignKey(Collection, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)

@@ -85,17 +85,22 @@ def handle_create_reward(request, user):
             unserialized_reward = utils.decode_reward_from_json(request.body, False)
 
             # Required fields
-            if not unserialized_reward.get("description"):
-                return HttpResponse(status=400, reason="Bad Request: Description must be provided")
+            if not unserialized_reward.get("name") or not unserialized_reward.get("description"):
+                return HttpResponse(status=400, reason="Bad Request: Name and Description must be provided")
 
         except utils.InvalidJSONData:
             return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
 
         # Executing the query
-        created_reward = queries.create_reward(unserialized_reward, user.id)
+        try:
+
+            created_reward = queries.create_reward(unserialized_reward, user.id)
+
+        except utils.NotAValidImage:
+            return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
 
         # Serializing
-        serialized_reward = utils.encode_reward_to_json([created_reward])[0]
+        serialized_reward = utils.encode_rewards_to_json([created_reward])[0]
         return JsonResponse(serialized_reward, safe=False, status=201)
 
     else:
@@ -112,7 +117,7 @@ def handle_get_rewards(request, user):
         all_rewards = queries.get_rewards()
 
         # Serializing
-        serialized_rewards = utils.encode_reward_to_json(all_rewards)
+        serialized_rewards = utils.encode_rewards_to_json(all_rewards)
 
         return JsonResponse(serialized_rewards, safe=False)
 
@@ -133,7 +138,7 @@ def handle_get_reward(request, uuid, user):
             return HttpResponse(status=400, reason="Bad request: Error no reward with that UUID")
 
         # Serializing
-        serialized_reward = utils.encode_reward_to_json([selected_reward])[0]
+        serialized_reward = utils.encode_rewards_to_json([selected_reward])[0]
 
         return JsonResponse(serialized_reward, safe=False)
 
@@ -164,10 +169,13 @@ def handle_patch_reward(request, uuid, user):
         return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
 
     # Executing query
-    updated_reward = queries.patch_reward_by_uuid(uuid, unserialized_patch_reward)
+    try:
+        updated_reward = queries.patch_reward_by_uuid(uuid, unserialized_patch_reward)
+    except utils.NotAValidImage:
+        return HttpResponse(status=400, reason="Bad Request: Invalid image provided")
 
     # Serializing
-    serialized_reward = utils.encode_reward_to_json([updated_reward])[0]
+    serialized_reward = utils.encode_rewards_to_json([updated_reward])[0]
     return JsonResponse(serialized_reward, safe=False)
 
 
@@ -220,7 +228,7 @@ def handle_redeem_reward(request, user):
                                 reason="Not Found: The Reward expired")
 
         # Serializing
-        serialized_rewards = utils.encode_reward_to_json([reward])
+        serialized_rewards = utils.encode_rewards_to_json([reward])[0]
         return JsonResponse(serialized_rewards, safe=False)
 
     else:

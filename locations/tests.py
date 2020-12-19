@@ -32,6 +32,7 @@ class LocationTestCase(TestCase):
         longitude = "-43.4172"
         facebook = "www.facebook.com"
         instagram = "www.instagram.com"
+        twitter = "www.twitter.com"
 
         # Sending request to create a Location
         return client.post('/v0/locations/', {
@@ -41,6 +42,7 @@ class LocationTestCase(TestCase):
             'longitude': longitude,
             'facebook': facebook,
             'instagram': instagram,
+            'twitter': twitter,
             'website': website,
         }, content_type="application/json")
 

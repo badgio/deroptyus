@@ -255,6 +255,8 @@ class UsersTestCase(TestCase):
             'view_badge',
             'redeem_badge',
             'redeem_reward',
+            'view_collection',
+            'check_collection_status',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=appers_permission_codenames).all(),
                             appers_group.permissions.all())
@@ -277,6 +279,7 @@ class UsersTestCase(TestCase):
             'add_location',
             'view_location',
             'view_badge',
+            'view_collection',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=managers_permission_codenames).all(),
                             managers_group.permissions.all())
@@ -301,6 +304,8 @@ class UsersTestCase(TestCase):
             'view_badge',
             'add_reward',
             'view_reward',
+            'add_collection',
+            'view_collection',
 
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=promoters_permission_codenames).all(),
@@ -334,6 +339,9 @@ class UsersTestCase(TestCase):
             'view_reward',
             'change_reward',
             'delete_reward',
+            'view_collection',
+            'change_collection',
+            'delete_collection',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=admins_permission_codenames).all(),
                             admins_group.permissions.all())
