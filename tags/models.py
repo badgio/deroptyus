@@ -1,7 +1,7 @@
 from django.db import models
 
 from locations.models import Location
-from users.models import AdminUser
+from users.models import AdminUser, AppUser
 
 
 class Tag(models.Model):

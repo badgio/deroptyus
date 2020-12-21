@@ -32,4 +32,5 @@ class Badge(models.Model):
 
 class RedeemedBadges(models.Model):
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
+    time_redeemed = models.DateTimeField(auto_now_add=True)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)

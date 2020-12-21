@@ -4,10 +4,11 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
+from locations import queries as location_queries
 from locations.models import Location
 from users.models import PromoterUser, AppUser
 from . import utils
-from .models import Badge, RedeemedBadges
+from .models import Badge, RedeemedBadges, Status
 
 
 def create_badge(badge, user_id):
@@ -49,14 +50,16 @@ def get_badges():
     return Badge.objects.all()
 
 
-def redeem_badges_by_location(location_uuid, user_id):
-    # Getting all badges that are associated with a location and are "up"
-    redeemable_badges = Badge.objects.filter(Q(location=location_uuid),
-                                             Q(start_date__lte=datetime.now()),
-                                             Q(end_date__isnull=True) | Q(end_date__gte=datetime.now()))
-
+def redeem_badges_by_location(location_id, user_id):
+    location = location_queries.get_location_by_id(location_id)
     # Getting app user that's redeeming the badge
     apper = AppUser.objects.get(user_id=user_id)
+    # Getting all badges that are associated with a location and are "up"
+    redeemable_badges = Badge.objects.filter(Q(location=location),
+                                             Q(start_date__lte=datetime.now()),
+                                             Q(status=Status.APPROVED),
+                                             Q(end_date__isnull=True) | Q(end_date__gte=datetime.now())).exclude(
+        Q(id__in=RedeemedBadges.objects.filter(app_user=apper).values_list('badge', flat=True)))
 
     # Linking the App User with the Badges
     for redeemable_badge in redeemable_badges:

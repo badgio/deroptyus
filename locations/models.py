@@ -24,3 +24,8 @@ class Location(models.Model):
     instagram = models.CharField(max_length=255, null=True)
     facebook = models.CharField(max_length=255, null=True)
     manager = models.ForeignKey(ManagerUser, on_delete=models.RESTRICT)
+
+    class Meta:
+        permissions = (
+            ('view_stats', 'Can view statistics for a location'),
+        )
