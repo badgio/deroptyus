@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Tag, RedeemedCounters
+from .models import Tag, RedeemedCounter
 
 admin.site.register(Tag)
-admin.site.register(RedeemedCounters)
+admin.site.register(RedeemedCounter)
