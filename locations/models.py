@@ -30,5 +30,6 @@ class Location(models.Model):
         permissions = (
             ('view_stats', 'Can view statistics for a location'),
         )
+
     def __str__(self):
         return str(self.uuid)

@@ -4,16 +4,13 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
+from badge_collections import queries as badge_collections_queries
 from locations import queries as location_queries
 from locations.models import Location
 from users.models import PromoterUser, AppUser
 from . import utils
-from .models import Badge, RedeemedBadges, Status
-from badge_collections import queries as badge_collections_queries
-from locations.models import Location
-from users.models import PromoterUser, AppUser
-from . import utils
 from .models import Badge, RedeemedBadge
+from .models import Status
 
 
 def create_badge(badge, user_id):
@@ -64,14 +61,14 @@ def redeem_badges_by_location(location_id, user_id):
                                              Q(start_date__lte=datetime.now()),
                                              Q(status=Status.APPROVED),
                                              Q(end_date__isnull=True) | Q(end_date__gte=datetime.now())).exclude(
-        Q(id__in=RedeemedBadges.objects.filter(app_user=apper).values_list('badge', flat=True)))
+        Q(id__in=RedeemedBadge.objects.filter(app_user=apper).values_list('badge', flat=True)))
 
     # Linking the App User with the Badges
     for redeemable_badge in redeemable_badges:
         try:  # Checking if the user has already redeemed this badge (and if so do nothing)
-            RedeemedBadges.objects.get(app_user=apper, badge=redeemable_badge)
-        except RedeemedBadges.DoesNotExist:
-            RedeemedBadges(app_user=apper, badge=redeemable_badge).save()
+            RedeemedBadge.objects.get(app_user=apper, badge=redeemable_badge)
+        except RedeemedBadge.DoesNotExist:
+            RedeemedBadge(app_user=apper, badge=redeemable_badge).save()
 
     return redeemable_badges
 

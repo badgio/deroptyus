@@ -5,7 +5,7 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
-from badges.models import RedeemedBadges
+from badges.models import RedeemedBadge
 from users.models import ManagerUser
 from . import utils
 from .models import Location
@@ -126,7 +126,7 @@ def get_location_weekly_report(location_uuid, map_stats):
     last_week_date = (datetime.now() - timedelta(days=7)).date()
     last_week_datetime = datetime.combine(last_week_date, datetime.max.time())
 
-    weekly_redeemed_badges = RedeemedBadges.objects.filter(Q(badge__location__uuid=location_uuid),
+    weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__location__uuid=location_uuid),
                                                            Q(time_redeemed__gt=last_week_datetime))
 
     for redeemed_badge in weekly_redeemed_badges:
@@ -136,7 +136,7 @@ def get_location_weekly_report(location_uuid, map_stats):
 
         day = date.strftime('%A')
 
-        map_stats = get_all_stats(user, day, map_stats)
+        get_all_stats(user, day, map_stats)
 
     weekly_stats = get_weekly_stats(map_stats)
 
@@ -144,7 +144,7 @@ def get_location_weekly_report(location_uuid, map_stats):
 
 
 def get_location_main_chart(location_uuid, map_stats):
-    redeemed_badges = RedeemedBadges.objects.filter(Q(badge__location__uuid=location_uuid))
+    redeemed_badges = RedeemedBadge.objects.filter(Q(badge__location__uuid=location_uuid))
 
     for redeemed_badge in redeemed_badges:
         date = redeemed_badge.time_redeemed
@@ -153,13 +153,13 @@ def get_location_main_chart(location_uuid, map_stats):
 
         day = date.strftime('%Y-%m-%d')
 
-        main_chart_stats = get_all_stats(user, day, map_stats)
+        get_all_stats(user, day, map_stats)
 
-    return main_chart_stats
+    return map_stats
 
 
 def get_location_secondary_chart(location_uuid, map_stats):
-    redeemed_badges = RedeemedBadges.objects.filter(Q(badge__location__uuid=location_uuid))
+    redeemed_badges = RedeemedBadge.objects.filter(Q(badge__location__uuid=location_uuid))
 
     for redeemed_badge in redeemed_badges:
         date = redeemed_badge.time_redeemed
@@ -218,7 +218,6 @@ def get_all_stats(user, date, map_stats):
             map_stats[elder][date] = 0
         map_stats[elder][date] += 1
 
-    return map_stats
 
 
 def get_secondary_chart_stats(date, hour, map_stats):
