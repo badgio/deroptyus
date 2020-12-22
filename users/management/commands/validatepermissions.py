@@ -107,7 +107,7 @@ class Command(BaseCommand):
         # Listing every permission that an Admin should have
         admins_permission_codenames = [
             'view_location',
-            'locations.view_stats'
+            'locations.view_stats',
             'change_location',
             'delete_location',
             'view_badge',

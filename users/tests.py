@@ -327,6 +327,7 @@ class UsersTestCase(TestCase):
         # Making the Group has the correct permissions
         admins_permission_codenames = [
             'view_location',
+            'locations.view_stats',
             'change_location',
             'delete_location',
             'view_badge',

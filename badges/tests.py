@@ -173,6 +173,16 @@ class BadgeTestCase(TestCase):
 
         badge_uuid = json.loads(self.__create_badge__(promoter_client, location_uuid).content)["uuid"]
 
+        admin_client = Client(HTTP_AUTHORIZATION=users.log_in_admin(email="admin@test.com",
+                                                                    password="test_password"))
+
+        # Approving Badge as an Admin
+        response = admin_client.patch(f'/v0/badges/{badge_uuid}', {
+            'status': "APPROVED"
+        }, content_type="application/json")
+
+        self.assertEqual(response.status_code, 200)
+
         # Re-sending Redeem Request with the same UID and Counter
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,

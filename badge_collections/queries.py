@@ -126,12 +126,12 @@ def patch_collection_by_uuid(collection_uuid, collection):
         badge_uuids = []
         for badge_uuid in collection.get('badges'):
             try:
-                badge_uuids.append(badges_queries.get_badge_by_uuid(badge_uuid))
+                badge_uuids.append(badge_uuid)
             except Exception:
                 raise NotEveryBadgeExists()
 
         # Removing no longer wanted badges
-        for collection_badge in CollectionBadge.objects.filter(collection=collection_uuid):
+        for collection_badge in CollectionBadge.objects.filter(collection__uuid=collection_uuid):
             if collection_badge.badge.uuid not in badge_uuids:
                 collection_badge.delete()
 

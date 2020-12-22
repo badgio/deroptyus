@@ -2,7 +2,6 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided
-from users.models import ManagerUser
 from . import queries, utils
 from .models import Location
 
@@ -204,7 +203,7 @@ def stats_location(request, uuid):
 
     else:
 
-        return HttpResponseNotAllowed(['GET', 'PATCH', 'DELETE'])
+        return HttpResponseNotAllowed(['GET'])
 
 
 def handle_get_stats_location(request, uuid, user):

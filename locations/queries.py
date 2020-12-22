@@ -47,6 +47,8 @@ def get_location_by_uuid(location_uuid):
 
 def get_location_by_id(location_id):
     return Location.objects.get(id=location_id)
+
+
 def get_str_by_pk(pk):
     return str(Location.objects.get(pk=pk))
 
@@ -127,11 +129,10 @@ def get_location_weekly_report(location_uuid, map_stats):
     last_week_datetime = datetime.combine(last_week_date, datetime.max.time())
 
     weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__location__uuid=location_uuid),
-                                                           Q(time_redeemed__gt=last_week_datetime))
+                                                          Q(time_redeemed__gt=last_week_datetime))
 
     for redeemed_badge in weekly_redeemed_badges:
         date = redeemed_badge.time_redeemed
-        # date = redeemed_badge.time_redeemed.day()
         user = redeemed_badge.app_user
 
         day = date.strftime('%A')
@@ -148,7 +149,6 @@ def get_location_main_chart(location_uuid, map_stats):
 
     for redeemed_badge in redeemed_badges:
         date = redeemed_badge.time_redeemed
-        # date = redeemed_badge.time_redeemed.day()
         user = redeemed_badge.app_user
 
         day = date.strftime('%Y-%m-%d')
@@ -163,8 +163,6 @@ def get_location_secondary_chart(location_uuid, map_stats):
 
     for redeemed_badge in redeemed_badges:
         date = redeemed_badge.time_redeemed
-        # date = redeemed_badge.time_redeemed.day()
-        user = redeemed_badge.app_user
 
         day = date.strftime('%Y-%m-%d')
         hour = date.strftime('%H')
@@ -219,7 +217,6 @@ def get_all_stats(user, date, map_stats):
         map_stats[elder][date] += 1
 
 
-
 def get_secondary_chart_stats(date, hour, map_stats):
     total_hour_visitors = 'Total hour visitors'
 
@@ -238,10 +235,6 @@ def get_secondary_chart_stats(date, hour, map_stats):
 def get_weekly_stats(map_stats):
     total_visitors = 0
     redeemed_rewards = 0
-    young_visitors = 0
-    adult_visitors = 0
-    elder_visitors = 0
-    most_common_gender = ''
     young = 'Young'
     adult = 'Adult'
     elder = 'Elder'
@@ -267,11 +260,12 @@ def get_weekly_stats(map_stats):
         elif map_stats[countries][x] > map_stats[countries][most_common_country]:
             most_common_country = x
 
-    number_female_gender=len(map_stats[female_gender])
+    number_female_gender = len(map_stats[female_gender])
     number_male_gender = len(map_stats[male_gender])
     if number_male_gender > number_female_gender:
-        most_common_gender=male_gender
-    else: most_common_gender=female_gender
+        most_common_gender = male_gender
+    else:
+        most_common_gender = female_gender
 
     young_visitors = len(map_stats[young])
     adult_visitors = len(map_stats[adult])
