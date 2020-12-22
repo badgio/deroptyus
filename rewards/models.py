@@ -1,7 +1,6 @@
 import uuid
 
 from django.db import models
-from django.utils import timezone
 
 from locations.models import Location
 from users.models import AppUser, PromoterUser
@@ -13,27 +12,27 @@ class Status(models.TextChoices):
     PENDING = "PENDING", "Pending Approval"
 
 
-class Badge(models.Model):
+class Reward(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.ImageField(upload_to='upload/badges/', null=True)
+    image = models.ImageField(upload_to='upload/rewards/', null=True)
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
-    start_date = models.DateTimeField(default=timezone.now)
-    end_date = models.DateTimeField(null=True)
-    location = models.ForeignKey(Location, on_delete=models.RESTRICT)
+    time_redeem = models.IntegerField(null=True)  # Time to redeem in seconds
     promoter = models.ForeignKey(PromoterUser, on_delete=models.RESTRICT)
+    location = models.ForeignKey(Location, on_delete=models.CASCADE)
 
     def __str__(self):
         return str(self.uuid)
 
     class Meta:
         permissions = (
-            ('redeem_badge', 'Can redeem Badge'),
+            ('redeem_reward', 'Can redeem Reward'),
         )
 
 
-class RedeemedBadge(models.Model):
+class RedeemableReward(models.Model):
+    reward_code = models.CharField(max_length=6, primary_key=True)
+    time_awarded = models.DateTimeField(auto_now_add=True, editable=False)
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
-    time_redeemed = models.DateTimeField(auto_now_add=True)
-    badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+    reward = models.ForeignKey(Reward, on_delete=models.RESTRICT)

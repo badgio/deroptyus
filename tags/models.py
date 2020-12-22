@@ -11,6 +11,9 @@ class Tag(models.Model):
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     admin = models.ForeignKey(AdminUser, on_delete=models.RESTRICT, editable=False)
 
+    def __str__(self):
+        return str(self.uid)
+
 
 class RedeemedCounters(models.Model):
     counter = models.IntegerField()

@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'locations',
     'tags',
     'badges',
+    'badge_collections',
+    'rewards',
     'users',
     'firebase',
     'groupadmin_users',

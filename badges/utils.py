@@ -5,6 +5,8 @@ from mimetypes import guess_type, guess_extension
 
 from django.core import serializers
 
+from locations import queries as location_queries
+from users import queries as user_queries
 from .models import Status
 
 
@@ -42,7 +44,7 @@ def encode_badge_to_json(badges):
                                                              'uuid', 'name',
                                                              'description',
                                                              'start_date', 'end_date',
-                                                             'location', 'status', 'image', ]))
+                                                             'location', 'promoter', 'status', 'image', ]))
 
     image_serialized_badges = []
     for serialized in serialized_badges:
@@ -54,6 +56,12 @@ def encode_badge_to_json(badges):
             image_data = open(badge_fields['image'], 'rb').read()
             # Encoding it
             badge_fields['image'] = encode_image_to_base64(image_data, badge_fields.get('image'))
+
+        if badge_fields.get('location'):
+            badge_fields['location'] = location_queries.get_str_by_pk(badge_fields.get('location'))
+
+        if badge_fields.get('promoter'):
+            badge_fields['promoter'] = user_queries.get_str_by_promoter_pk(badge_fields.get('promoter'))
 
         image_serialized_badges.append(badge_fields)
 

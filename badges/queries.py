@@ -9,6 +9,11 @@ from locations.models import Location
 from users.models import PromoterUser, AppUser
 from . import utils
 from .models import Badge, RedeemedBadges, Status
+from badge_collections import queries as badge_collections_queries
+from locations.models import Location
+from users.models import PromoterUser, AppUser
+from . import utils
+from .models import Badge, RedeemedBadge
 
 
 def create_badge(badge, user_id):
@@ -75,12 +80,21 @@ def get_badge_by_uuid(badge_uuid):
     return Badge.objects.get(uuid=badge_uuid)
 
 
+def get_str_by_pk(pk):
+    return str(Badge.objects.get(pk=pk))
+
+
 def delete_badge_by_uuid(badge_uuid):
     badge = get_badge_by_uuid(badge_uuid)
-    # Deleting previous image from storage
-    if badge.image:
-        default_storage.delete(badge.image.path)
-    return badge.delete()
+    # Trying to delete badge
+    try:
+        badge.delete()
+        # Deleting badge image
+        if badge.image:
+            default_storage.delete(badge.image.path)
+    except Exception:
+        return False  # Couldn't delete
+    return True
 
 
 def patch_badge_by_uuid(badge_uuid, badge):
@@ -124,6 +138,33 @@ def patch_badge_by_uuid(badge_uuid, badge):
     badge_update.save()
 
     return badge_update
+
+
+def redeem_badges_by_location(location_uuid, user_id):
+    # Getting all badges that are associated with a location and are "up"
+    redeemable_badges = Badge.objects.filter(Q(location=location_uuid),
+                                             Q(start_date__lte=datetime.now()),
+                                             Q(end_date__isnull=True) | Q(end_date__gte=datetime.now()))
+
+    # Getting app user that's redeeming the badge
+    apper = AppUser.objects.get(user_id=user_id)
+
+    badges_redeemed = []
+    # Linking the App User with the Badges
+    for redeemable_badge in redeemable_badges:
+        try:  # Checking if the user has already redeemed this badge (and if so do nothing)
+            RedeemedBadge.objects.get(app_user=apper, badge=redeemable_badge)
+        except RedeemedBadge.DoesNotExist:
+            # Redeeming Badge
+            redeemed_badge = RedeemedBadge(app_user=apper, badge=redeemable_badge)
+            redeemed_badge.save()
+            badges_redeemed.append(redeemed_badge.badge)
+
+    # Checking for collection completion
+    for badge in badges_redeemed:
+        badge_collections_queries.redeem_collections_by_badge(badge, user_id)
+
+    return redeemable_badges
 
 
 class NotAValidLocation(Exception):
