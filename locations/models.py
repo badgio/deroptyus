@@ -26,5 +26,10 @@ class Location(models.Model):
     twitter = models.CharField(max_length=255, null=True)
     manager = models.ForeignKey(ManagerUser, on_delete=models.RESTRICT)
 
+    class Meta:
+        permissions = (
+            ('view_stats', 'Can view statistics for a location'),
+        )
+
     def __str__(self):
         return str(self.uuid)

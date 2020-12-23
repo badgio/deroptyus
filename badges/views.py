@@ -238,7 +238,7 @@ def handle_redeem_badge(request, user):
 
             if not valid_badges.count():
                 return HttpResponse(status=400,
-                                    reason="Bad Request: No Badge associated with the Location of the Tag")
+                                    reason="Bad Request: No Badge to redeem")
 
         except tags_queries.NotAValidTagUID:
             return HttpResponse(status=404,
