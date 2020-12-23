@@ -92,43 +92,55 @@ def delete_collection_by_uuid(collection_uuid):
 def patch_collection_by_uuid(collection_uuid, collection):
     # Getting collection to update
     collection_update = get_collection_by_uuid(collection_uuid)
-    # Updating provided fields
+
+    # Updating non-nullable fields
     if collection.get('name'):
         collection_update.name = collection.get('name')
     if collection.get('description'):
         collection_update.description = collection.get('description')
-    # If changing both dates
-    if collection.get('start_date') and not collection.get('end_date'):
-        collection_update.start_date = collection.get('start_date')
-    # If changing only start
-    elif collection.get('start_date'):
-        if collection_update.end_date > collection.get('start_date'):
-            collection_update.start_date = collection.get('start_date')
-        else:
-            raise StartDateAfterEndDate()
-    if collection.get('end_date'):
-        if collection.get('end_date') > collection_update.start_date:  # End must be after the start
-            collection_update.end_date = collection.get('end_date')
-        else:
-            raise EndDateNotAfterStartDate()
+
+    # Updating dates
+    start_date = collection.get('start_date') if 'start_date' in collection else collection_update.start_date
+    end_date = collection.get('end_date') if 'end_date' in collection else collection_update.end_date
+    # Updating start_date
+    if not end_date or start_date < end_date:
+        collection_update.start_date = start_date
+    elif start_date and start_date >= end_date:
+        raise StartDateAfterEndDate()
+    # Updating end_date
+    if not end_date or not start_date or start_date < end_date:
+        collection_update.end_date = end_date
+    elif end_date and end_date <= start_date:
+        raise EndDateNotAfterStartDate()
+
     if collection.get('status'):
         collection_update.status = collection.get('status')
 
-    if collection.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(collection.get("image"), str(collection_update.uuid))
-        # Deleting previous image from storage
-        default_storage.delete(collection_update.image.path)
-        # Storing image
-        collection_update.image = ContentFile(decoded_img, name=filename)
+    if "image" in collection:
+        # Checking if a null was provided
+        if not collection.get("image"):
+            # Deleting previous image from storage
+            if collection_update.image:
+                default_storage.delete(collection_update.image.path)
+            # Setting field to null
+            collection_update.image = None
+        else:
+            # Decoding image from base64
+            decoded_img, filename = utils.decode_image_from_base64(collection.get("image"), str(collection_update.uuid))
+            # Deleting previous image from storage
+            if collection_update.image:
+                default_storage.delete(collection_update.image.path)
+            # Storing image
+            collection_update.image = ContentFile(decoded_img, name=filename)
 
-    if collection.get('badges'):
+    if 'badges' in collection:
         badge_uuids = []
-        for badge_uuid in collection.get('badges'):
-            try:
-                badge_uuids.append(badge_uuid)
-            except Exception:
-                raise NotEveryBadgeExists()
+        if collection.get('badges'):
+            for badge_uuid in collection.get('badges'):
+                try:
+                    badge_uuids.append(badge_uuid)
+                except Exception:
+                    raise NotEveryBadgeExists()
 
         # Removing no longer wanted badges
         for collection_badge in CollectionBadge.objects.filter(collection__uuid=collection_uuid):
@@ -143,12 +155,15 @@ def patch_collection_by_uuid(collection_uuid, collection):
             except CollectionBadge.DoesNotExist:
                 CollectionBadge(collection=collection_update, badge=badge).save()
 
-    # Checking if the collection has a reward
-    if collection.get("reward"):
-        try:
-            collection_update.reward = rewards_queries.get_reward_by_uuid(collection.get("reward"))
-        except Reward.DoesNotExist:
-            raise NotAValidReward()
+    # Checking if the reward field was sent
+    if "reward" in collection:
+        # Deleting previous entry
+        collection_update.reward = None
+        if collection.get("reward"):
+            try:
+                collection_update.reward = rewards_queries.get_reward_by_uuid(collection.get("reward"))
+            except Reward.DoesNotExist:
+                raise NotAValidReward()
 
     collection_update.save()
 

@@ -39,11 +39,14 @@ def patch_tag_by_uid(tag_uid, tag):
     # Updating provided fields
     if tag.get('app_key'):
         tag_update.app_key = tag.get('app_key')
-    if tag.get('location'):
-        try:
-            tag_update.location = get_location_by_uuid('location')
-        except Location.DoesNotExist:
-            raise NotAValidLocation()
+    if 'location' in tag:
+        if not tag.get('location'):
+            tag_update.location = None
+        else:
+            try:
+                tag_update.location = get_location_by_uuid('location')
+            except Location.DoesNotExist:
+                raise NotAValidLocation()
 
     tag_update.save()
 

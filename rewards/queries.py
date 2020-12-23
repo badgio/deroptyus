@@ -87,13 +87,22 @@ def patch_reward_by_uuid(reward_uuid, reward):
             reward_update.location = Location.objects.get(uuid=reward.get('location'))
         except Location.DoesNotExist:
             raise NotAValidLocation()
-    if reward.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(reward.get("image"), str(reward_update.uuid))
-        # Deleting previous image from storage
-        default_storage.delete(reward_update.image.path)
-        # Storing image
-        reward_update.image = ContentFile(decoded_img, name=filename)
+    if "image" in reward:
+        # Checking if a null was provided
+        if not reward.get("image"):
+            # Deleting previous image from storage
+            if reward_update.image:
+                default_storage.delete(reward_update.image.path)
+            # Setting field to null
+            reward_update.image = None
+        else:
+            # Decoding image from base64
+            decoded_img, filename = utils.decode_image_from_base64(reward.get("image"), str(reward_update.uuid))
+            # Deleting previous image from storage
+            if reward_update.image:
+                default_storage.delete(reward_update.image.path)
+            # Storing image
+            reward_update.image = ContentFile(decoded_img, name=filename)
 
     reward_update.save()
 
