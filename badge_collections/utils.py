@@ -79,10 +79,7 @@ def decode_collection_from_json(data, admin):
         collection = {
             'name': json_data.get("name"),
             'description': json_data.get("description"),
-            'image': json_data.get("image"),
             'status': json_data.get("status") if admin else Status.PENDING,  # Only admin can change status
-            'reward': json_data.get("reward"),
-            'badges': json_data.get('badges'),
         }
 
         # Setting start date
@@ -98,6 +95,14 @@ def decode_collection_from_json(data, admin):
                 collection["end_date"] = datetime.fromisoformat(json_data.get("end_date"))
             except Exception:
                 raise NotAValidEndDate()
+
+        # Setting nullable fields
+        if 'image' in json_data:
+            collection['image'] = json_data.get("image")
+        if 'reward' in json_data:
+            collection['reward'] = json_data.get("reward")
+        if 'badges' in json_data:
+            collection['badges'] = json_data.get('badges')
 
     except json.JSONDecodeError:
         raise InvalidJSONData()

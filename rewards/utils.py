@@ -86,11 +86,15 @@ def decode_reward_from_json(data, admin):
         reward = {
             'name': json_data.get('name'),
             'description': json_data.get('description'),
-            'image': json_data.get('image'),
             'location': json_data.get('location'),
-            'time_redeem': int(json_data.get('time_redeem')) if json_data.get('time_redeem') else None,
             'status': json_data.get("status") if admin else Status.PENDING,  # Only admin can change status
         }
+
+        if 'image' in json_data:
+            reward['image'] = json_data.get('image'),
+        if 'time_redeem' in json_data:
+            reward['time_redeem'] = int(json_data.get('time_redeem')) if json_data.get('time_redeem') else None
+
     except json.JSONDecodeError:
         raise InvalidJSONData()
 

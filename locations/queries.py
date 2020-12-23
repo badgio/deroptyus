@@ -69,32 +69,42 @@ def delete_location_by_uuid(location_uuid):
 def patch_location_by_uuid(location_uuid, location):
     # Getting location to update
     location_update = get_location_by_uuid(location_uuid)
-    # Updating provided fields
+    # Updating non-nullable fields
     if location.get('name'):
         location_update.name = location.get('name')
     if location.get('description'):
         location_update.description = location.get('description')
-    if location.get('latitude'):
+    # Updating nullable fields
+    if 'latitude' in location:
         location_update.latitude = location.get('latitude')
-    if location.get('longitude'):
+    if 'longitude' in location:
         location_update.longitude = location.get('longitude')
-    if location.get('website'):
+    if 'website' in location:
         location_update.website = location.get('website')
-    if location.get('status'):
+    if 'status' in location:
         location_update.status = location.get('status')
-    if location.get('facebook'):
+    if 'facebook' in location:
         location_update.facebook = location.get('facebook')
-    if location.get('instagram'):
+    if 'instagram' in location:
         location_update.instagram = location.get('instagram')
-    if location.get('twitter'):
+    if 'twitter' in location:
         location_update.twitter = location.get('twitter')
-    if location.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(location.get("image"), str(location_update.uuid))
-        # Deleting previous image from storage
-        default_storage.delete(location_update.image.path)
-        # Storing image
-        location_update.image = ContentFile(decoded_img, name=filename)
+    if 'image' in location:
+        # Checking if a null was provided
+        if not location.get("image"):
+            # Deleting previous image from storage
+            if location_update.image:
+                default_storage.delete(location_update.image.path)
+            # Setting field to null
+            location_update.image = None
+        else:
+            # Decoding image from base64
+            decoded_img, filename = utils.decode_image_from_base64(location.get("image"), str(location_update.uuid))
+            # Deleting previous image from storage
+            if location_update.image:
+                default_storage.delete(location_update.image.path)
+            # Storing image
+            location_update.image = ContentFile(decoded_img, name=filename)
 
     location_update.save()
 

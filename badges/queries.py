@@ -106,25 +106,27 @@ def delete_badge_by_uuid(badge_uuid):
 def patch_badge_by_uuid(badge_uuid, badge):
     # Getting badge to update
     badge_update = get_badge_by_uuid(badge_uuid)
-    # Updating provided fields
+
+    # Updating non-nullable fields
     if badge.get('name'):
         badge_update.name = badge.get('name')
     if badge.get('description'):
         badge_update.description = badge.get('description')
-    # If changing both dates
-    if badge.get('start_date') and not badge.get('end_date'):
-        badge_update.start_date = badge.get('start_date')
-    # If changing only start
-    elif badge.get('start_date'):
-        if badge_update.end_date > badge.get('start_date'):
-            badge_update.start_date = badge.get('start_date')
-        else:
-            raise StartDateAfterEndDate()
-    if badge.get('end_date'):
-        if badge.get('end_date') > badge_update.start_date:  # End must be after the start
-            badge_update.end_date = badge.get('end_date')
-        else:
-            raise EndDateNotAfterStartDate()
+
+    # Updating dates
+    start_date = badge.get('start_date') if 'start_date' in badge else badge_update.start_date
+    end_date = badge.get('end_date') if 'end_date' in badge else badge_update.end_date
+    # Updating start_date
+    if not end_date or start_date < end_date:
+        badge_update.start_date = start_date
+    elif start_date and start_date >= end_date:
+        raise StartDateAfterEndDate()
+    # Updating end_date
+    if not end_date or not start_date or start_date < end_date:
+        badge_update.end_date = end_date
+    elif end_date and end_date <= start_date:
+        raise EndDateNotAfterStartDate()
+
     if badge.get('status'):
         badge_update.status = badge.get('status')
     if badge.get('location'):
@@ -133,13 +135,22 @@ def patch_badge_by_uuid(badge_uuid, badge):
         except Location.DoesNotExist:
             raise NotAValidLocation()
 
-    if badge.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(badge.get("image"), str(badge_update.uuid))
-        # Deleting previous image from storage
-        default_storage.delete(badge_update.image.path)
-        # Storing image
-        badge_update.image = ContentFile(decoded_img, name=filename)
+    if "image" in badge:
+        # Checking if a null was provided
+        if not badge.get("image"):
+            # Deleting previous image from storage
+            if badge_update.image:
+                default_storage.delete(badge_update.image.path)
+            # Setting field to null
+            badge_update.image = None
+        else:
+            # Decoding image from base64
+            decoded_img, filename = utils.decode_image_from_base64(badge.get("image"), str(badge_update.uuid))
+            # Deleting previous image from storage
+            if badge_update.image:
+                default_storage.delete(badge_update.image.path)
+            # Storing image
+            badge_update.image = ContentFile(decoded_img, name=filename)
 
     badge_update.save()
 
