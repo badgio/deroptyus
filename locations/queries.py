@@ -135,9 +135,9 @@ def get_location_weekly_report(location_uuid, map_stats):
         date = redeemed_badge.time_redeemed
         user = redeemed_badge.app_user
 
-        day = date.strftime('%A')
+        weekday = date.strftime('%A')
 
-        get_all_stats(user, day, map_stats)
+        get_all_stats(user, weekday, map_stats)
 
     weekly_stats = get_weekly_stats(map_stats)
 
@@ -239,29 +239,26 @@ def get_weekly_stats(map_stats):
     adult = 'Adult'
     elder = 'Elder'
     general = 'General'
-    busiest_day = 'Tuesday'
+    busiest_day = None
     countries = 'Countries'
     female_gender = 'Female'
     male_gender = 'Male'
-    most_common_country = 'Portugal'
+    most_common_country = None
     stats = {}
 
-    for x in map_stats[general]:
-        stats[x] = map_stats[general][x]
-        total_visitors += map_stats[general][x]
-        if busiest_day not in map_stats[general]:
-            busiest_day = x
-        elif map_stats[general][x] > map_stats[general][busiest_day]:
-            busiest_day = x
+    for weekday in map_stats[general]:
+        stats[weekday] = map_stats[general][weekday]
+        total_visitors += map_stats[general][weekday]
+        if not busiest_day or map_stats[general][weekday] > map_stats[general][busiest_day]:
+            busiest_day = weekday
 
-    for x in map_stats[countries]:
-        if most_common_country not in map_stats[countries]:
-            most_common_country = x
-        elif map_stats[countries][x] > map_stats[countries][most_common_country]:
-            most_common_country = x
+    for country in map_stats[countries]:
+        if not most_common_country or map_stats[countries][country] > map_stats[countries][most_common_country]:
+            most_common_country = country
 
-    number_female_gender = len(map_stats[female_gender])
-    number_male_gender = len(map_stats[male_gender])
+    number_female_gender = len(map_stats[female_gender]) if female_gender in map_stats else 0
+    number_male_gender = len(map_stats[male_gender]) if male_gender in map_stats else 0
+
     if number_male_gender > number_female_gender:
         most_common_gender = male_gender
     else:
