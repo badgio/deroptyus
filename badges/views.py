@@ -4,6 +4,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 import tags.queries as tags_queries
 import tags.utils as tags_utils
 from firebase.auth import InvalidIdToken, NoTokenProvided
+from tags import crypto
 from . import queries, utils
 from .models import Badge
 
@@ -239,6 +240,9 @@ def handle_redeem_badge(request, user):
             if not valid_badges.count():
                 return HttpResponse(status=400,
                                     reason="Bad Request: No Badge to redeem")
+
+        except (crypto.InvalidUID, crypto.InvalidCounter, crypto.InvalidAppKey, crypto.InvalidCMAC) as e:
+            return HttpResponse(status=400, reason=f"Bad Request: {e}")
 
         except tags_queries.NotAValidTagUID:
             return HttpResponse(status=404,

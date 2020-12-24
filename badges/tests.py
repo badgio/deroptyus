@@ -1,9 +1,11 @@
+import binascii
 import json
 from datetime import datetime, timedelta
 
 from django.test import Client, TestCase
 
 from locations.tests import LocationTestCase
+from tags import crypto
 from tags.tests import TagTestCase
 from users.tests import UsersTestCase
 
@@ -160,8 +162,10 @@ class BadgeTestCase(TestCase):
         # Sending Redeem Request with the UID of the recently created tag and a Counter at 0
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
-            'cmac': "ENCYRPTEDSTUFF",
-            'counter': "0x0"
+            'cmac': binascii.hexlify(
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000000"))
+                               .decode("utf-8"),
+            'counter': "0x000000"
         }, content_type="application/json")
 
         # Asserting that the request fails (because there's no badge associated with the tag)
@@ -196,8 +200,10 @@ class BadgeTestCase(TestCase):
         # Re-sending Redeem Request with the same UID but an updated Counter
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
-            'cmac': "ENCYRPTEDSTUFF",
-            'counter': "0x1"
+            'cmac': binascii.hexlify(
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000002"))
+                               .decode("utf-8"),
+            'counter': "0x000002"
         }, content_type="application/json")
 
         # Asserting that the request succeeds

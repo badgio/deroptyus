@@ -28,13 +28,15 @@ class TagTestCase(TestCase):
     def __create_tag__(client, location=None):
         locations = LocationTestCase()
 
-        uid = "04:62:6F:22:2A:62:08"
-        app_key = "AppKey?"
+        uid = "04626f222a6208"
+        app_key = "0b94831c5ecce72367dc70706a9bdec3" # Do not alter, it's used in test_badge_redeem
+        counter = "0x000000"
 
         # Sending request to create a Tag
         return client.post('/v0/tags/', {
             'uid': uid,
             'app_key': app_key,
+            'counter': counter,
             'location': location if location else locations.get_location(),
         }, content_type="application/json")
 
@@ -101,7 +103,7 @@ class TagTestCase(TestCase):
         # Sending request to update a Tag
         uid = json.loads(response.content)['uid']
         response = client.patch(f'/v0/tags/{uid}', {
-            'app_key': "OtherAppKey?",
+            'app_key': "616d2a2c78995fa84e031e8ec1e4cadb",
         }, content_type="application/json")
 
         # Asserting the success of the tag update
