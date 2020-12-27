@@ -163,13 +163,14 @@ class BadgeTestCase(TestCase):
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
             'cmac': binascii.hexlify(
-                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000000"))
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000001"))
                                .decode("utf-8"),
-            'counter': "0x000000"
+            'counter': "0x000001"
         }, content_type="application/json")
 
-        # Asserting that the request fails (because there's no badge associated with the tag)
-        self.assertEqual(response.status_code, 400)
+        # Asserting that the request returns an empty array of badges (because there's no badge associated with the tag)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(json.loads(response.content), [])
 
         promoter_client = Client(HTTP_AUTHORIZATION=users.log_in(type='promoters',
                                                                  email="promoter@test.com",
@@ -190,12 +191,14 @@ class BadgeTestCase(TestCase):
         # Re-sending Redeem Request with the same UID and Counter
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
-            'cmac': "ENCYRPTEDSTUFF",
-            'counter': "0x0"
+            'cmac': binascii.hexlify(
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000000"))
+                               .decode("utf-8"),
+            'counter': "0x000000"
         }, content_type="application/json")
 
         # Asserting that the request fails (because the counter 0 has already been redeemed)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 410)
 
         # Re-sending Redeem Request with the same UID but an updated Counter
         response = client.post('/v0/badges/redeem', {

@@ -116,12 +116,12 @@ def validate_cmac(uid, app_key, counter, cmac):
     try:
         unhexed_cmac = binascii.unhexlify(cmac)
     except binascii.Error:
-        raise InvalidCMAC("Failed to decode CMAC.")
+        raise InvalidCMAC("CMAC must be an hexadecimal number.")
 
     valid_cmac = calculate_cmac(uid, app_key, counter)
 
     if unhexed_cmac != valid_cmac:
-        raise InvalidCMAC("Invalid CMAC.")
+        raise MessageAuthenticationFailed("CMAC sent does not match Server-side CMAC calculation.")
 
     return valid_cmac
 
@@ -139,4 +139,7 @@ class InvalidAppKey(Exception):
 
 
 class InvalidCMAC(Exception):
+    pass
+
+class MessageAuthenticationFailed(Exception):
     pass

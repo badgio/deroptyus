@@ -240,12 +240,15 @@ def handle_redeem_badge(request, user):
         except (crypto.InvalidUID, crypto.InvalidCounter, crypto.InvalidAppKey, crypto.InvalidCMAC) as e:
             return HttpResponse(status=400, reason=f"Bad Request: {e}")
 
+        except crypto.MessageAuthenticationFailed as e:
+            return HttpResponse(status=406, reason=f"Not Acceptable: {e}")
+
         except tags_queries.NotAValidTagUID:
             return HttpResponse(status=404,
                                 reason="Not Found: No Tag by that UID")
         except tags_queries.AlreadyRedeemedTag:
-            return HttpResponse(status=400,
-                                reason="Bad Request: The info provided refers to an already redeemed tag")
+            return HttpResponse(status=410,
+                                reason="Gone: The info provided refers to an already redeemed tag")
 
         # Serializing
         serialized_badges = utils.encode_badge_to_json(valid_badges)
