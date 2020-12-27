@@ -237,10 +237,6 @@ def handle_redeem_badge(request, user):
 
             valid_badges = queries.redeem_badges_by_location(location_id, user.id)
 
-            if not valid_badges.count():
-                return HttpResponse(status=400,
-                                    reason="Bad Request: No Badge to redeem")
-
         except (crypto.InvalidUID, crypto.InvalidCounter, crypto.InvalidAppKey, crypto.InvalidCMAC) as e:
             return HttpResponse(status=400, reason=f"Bad Request: {e}")
 
