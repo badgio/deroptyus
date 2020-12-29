@@ -74,7 +74,7 @@ def decode_redeem_info_from_json(data):
         redeem_info = {
             'reward_code': json_data.get('reward_code')
         }
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return redeem_info
@@ -95,7 +95,7 @@ def decode_reward_from_json(data, admin):
         if 'time_redeem' in json_data:
             reward['time_redeem'] = int(json_data.get('time_redeem')) if json_data.get('time_redeem') else None
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return reward

@@ -1,9 +1,12 @@
-from django.http import HttpResponse, JsonResponse
+from django.contrib.auth import authenticate
+from django.http import HttpResponse, JsonResponse, HttpResponseNotAllowed
 
+from firebase.auth import NoTokenProvided, InvalidIdToken, FirebaseUserDoesNotExist
 from . import queries, utils
 
 
 # Views
+
 
 def appers(request):
     if request.method == 'POST':
@@ -24,6 +27,29 @@ def promoters(request):
         return handle_create_promoter(request)
     else:
         return HttpResponse(status=405, reason=f"Method Not Allowed: {request.method} not supported")
+
+
+def profile(request):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == "GET":
+        return handle_get_user_profile(request, user)
+
+    elif request.method == "PATCH":
+        return handle_patch_user_profile(request, user)
+
+    elif request.method == "DELETE":
+        return handle_delete_user_profile(request, user)
+
+    else:
+        return HttpResponseNotAllowed(['GET', 'PATCH', 'DELETE'])
 
 
 # Auxiliary functions for the Views
@@ -55,7 +81,7 @@ def handle_create_apper(request):
         return HttpResponse(status=503, reason="Internal Server Error: Permission Groups not set")
 
     # Serializing
-    serialized_user = utils.encode_apper_to_json([app_user])[0]
+    serialized_user = utils.encode_apper_to_json(app_user)
     return JsonResponse(serialized_user, status=201)
 
 
@@ -81,7 +107,7 @@ def handle_create_manager(request):
 
     # Serializing
 
-    serialized_user = utils.encode_manager_to_json([manager_user])[0]
+    serialized_user = utils.encode_manager_to_json(manager_user)
     return JsonResponse(serialized_user, status=201)
 
 
@@ -108,5 +134,54 @@ def handle_create_promoter(request):
         return HttpResponse(status=503, reason="Internal Server Error: Permission Groups not set")
 
     # Serializing
-    serialized_user = utils.encode_promoter_to_json([promoter_user])[0]
+    serialized_user = utils.encode_promoter_to_json(promoter_user)
     return JsonResponse(serialized_user, status=201)
+
+
+def handle_get_user_profile(request, user):
+    # Executing query
+    users = [queries.get_admin_user(user),
+             queries.get_manager_user(user),
+             queries.get_promoter_user(user),
+             queries.get_app_user(user)]
+    users = [user for user in users if user]
+
+    # Serializing
+    serialized_user = utils.encode_user_to_json(users)
+    return JsonResponse(serialized_user, status=201, safe=False)
+
+
+def handle_patch_user_profile(request, user):
+    # Unserializing
+    try:
+        unserialized_user = utils.decode_user_from_json(request.body)
+    except utils.InvalidJSONData:
+        return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
+
+    # Executing query
+    try:
+        queries.patch_user(unserialized_user, user)
+    except queries.FirebaseError:
+        return HttpResponse(status=503, reason="Internal Server Error: Firebase")
+
+    # Serializing
+    users = [queries.get_admin_user(user),
+             queries.get_manager_user(user),
+             queries.get_promoter_user(user),
+             queries.get_app_user(user)]
+    users = [user for user in users if user]
+
+    serialized_user = utils.encode_user_to_json(users)
+    return JsonResponse(serialized_user, status=201, safe=False)
+
+
+def handle_delete_user_profile(request, user):
+    # Executing the Query
+    try:
+        queries.delete_user(user)
+    except queries.FirebaseError:
+        return HttpResponse(status=503, reason="Internal Server Error: Firebase")
+    except Exception:
+        return HttpResponse(status=400, reason="Bad Request: User can't be deleted.")
+
+    return HttpResponse(status=200)

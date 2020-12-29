@@ -95,7 +95,7 @@ def decode_badge_from_json(data, admin):
         if "image" in json_data:
             badge["image"] = json_data.get("image")
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return badge

@@ -54,12 +54,19 @@ def create_app_user(app_user_info):
 
         # Creating an AppUser
         app_user = AppUser(email=app_user_info.get("email"),
-                           name=app_user_info.get("name"),
-                           date_birth=app_user_info.get("date_birth"),
-                           country=app_user_info.get("country"),
-                           city=app_user_info.get("city"),
-                           gender=app_user_info.get("gender"),
                            user=user)
+
+        if "name" in app_user_info:
+            app_user.name = app_user_info.get("name")
+        if "date_birth" in app_user_info:
+            app_user.date_birth = app_user_info.get("date_birth")
+        if "country" in app_user_info:
+            app_user.country = app_user_info.get("country")
+        if "city" in app_user_info:
+            app_user.city = app_user_info.get("city")
+        if "gender" in app_user_info:
+            app_user.gender = app_user_info.get("gender")
+
         app_user.save()
 
         # Set the App User permissions
@@ -169,6 +176,141 @@ def create_admin_user(email, password):
     return admin_user
 
 
+def get_app_user(user):
+    try:
+        return AppUser.objects.get(user=user)
+    except AppUser.DoesNotExist:
+        return None
+
+
+def get_manager_user(user):
+    try:
+        return ManagerUser.objects.get(user=user)
+    except ManagerUser.DoesNotExist:
+        return None
+
+
+def get_promoter_user(user):
+    try:
+        return PromoterUser.objects.get(user=user)
+    except PromoterUser.DoesNotExist:
+        return None
+
+
+def get_admin_user(user):
+    try:
+        return AdminUser.objects.get(user=user)
+    except AdminUser.DoesNotExist:
+        return None
+
+
+def patch_user(user_data, user):
+    try:
+        firebase_user = FirebaseUser.objects.get(user=user)
+    except FirebaseUser.DoesNotExist:
+        raise FirebaseUserDoesNotExist()
+
+    if "email" in user_data:
+        # Setting email for change
+        user_data["mobile_info"]["email"] = user_data.get("email")
+        user_data["manager_info"]["email"] = user_data.get("email")
+        user_data["promoter_info"]["email"] = user_data.get("email")
+        user_data["admin_info"]["email"] = user_data.get("email")
+        # Changing email in Firebase
+        firebase_backend.change_users_email(uid=firebase_user.id, email=user_data.get("email"))
+
+    if "password" in user_data:
+        # Changing password in Firebase
+        firebase_backend.change_users_password(uid=firebase_user.id, password=user_data.get("password"))
+
+    if "mobile_info" in user_data:
+        patch_app_user(user_data["mobile_info"], user)
+
+    if "manager_info" in user_data:
+        patch_manager_user(user_data["manager_info"], user)
+
+    if "promoter_info" in user_data:
+        patch_promoter_user(user_data["promoter_info"], user)
+
+    if "admin_info" in user_data:
+        patch_admin_user(user_data["admin_info"], user)
+
+
+def patch_app_user(app_user_info, user):
+    # Getting AppUser
+    app_user = get_app_user(user)
+
+    if not app_user:
+        return
+
+    if "email" in app_user_info:
+        app_user.email = app_user_info.get("email")
+    if "name" in app_user_info:
+        app_user.name = app_user_info.get("name")
+    if "date_birth" in app_user_info:
+        app_user.date_birth = app_user_info.get("date_birth")
+    if "country" in app_user_info:
+        app_user.country = app_user_info.get("country")
+    if "city" in app_user_info:
+        app_user.city = app_user_info.get("city")
+    if "gender" in app_user_info:
+        app_user.gender = app_user_info.get("gender")
+
+    app_user.save()
+
+
+def patch_manager_user(manager_user_info, user):
+    # Getting AppUser
+    manager_user = get_manager_user(user)
+
+    if not manager_user:
+        return
+
+    if "email" in manager_user_info:
+        manager_user.email = manager_user_info.get("email")
+
+    manager_user.save()
+
+
+def patch_promoter_user(promoter_user_info, user):
+    # Getting AppUser
+    promoter_user = get_promoter_user(user)
+
+    if not promoter_user:
+        return
+
+    if "email" in promoter_user_info:
+        promoter_user.email = promoter_user_info.get("email")
+
+    promoter_user.save()
+
+
+def patch_admin_user(admin_user_info, user):
+    # Getting AppUser
+    admin_user = get_admin_user(user)
+
+    if not admin_user:
+        return
+
+    if "email" in admin_user_info:
+        admin_user.email = admin_user_info.get("email")
+
+    admin_user.save()
+
+
+def delete_user(user):
+    # Getting FirebaseUser
+    try:
+        firebase_user = FirebaseUser.objects.get(user=user)
+    except FirebaseUser.DoesNotExist:
+        raise FirebaseUserDoesNotExist()
+
+    # Deleting the user in the Firebase Console
+    firebase_backend.delete_user(uid=firebase_user.id)
+    # Deleting the User
+    user.delete()
+
+
 def get_str_by_app_user_pk(pk):
     return str(AppUser.objects.get(pk=pk))
 
@@ -198,6 +340,10 @@ class PromoterExistsError(Exception):
 
 
 class AdminExistsError(Exception):
+    pass
+
+
+class FirebaseUserDoesNotExist(Exception):
     pass
 
 

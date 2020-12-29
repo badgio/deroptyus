@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
-from firebase.auth import InvalidIdToken, NoTokenProvided
+from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import utils, queries
 from .models import Collection
 
@@ -14,7 +14,7 @@ def collections(request):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -37,7 +37,7 @@ def crud_collection(request, uuid):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -64,7 +64,7 @@ def status(request, uuid):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 

@@ -6,4 +6,5 @@ urlpatterns = [
     path('mobile', views.appers),
     path('managers', views.managers),
     path('promoters', views.promoters),
+    path('profile', views.profile),
 ]
