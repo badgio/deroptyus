@@ -29,7 +29,7 @@ class TagTestCase(TestCase):
         locations = LocationTestCase()
 
         uid = "04626f222a6208"
-        app_key = "0b94831c5ecce72367dc70706a9bdec3" # Do not alter, it's used in test_badge_redeem
+        app_key = "0b94831c5ecce72367dc70706a9bdec3"  # Do not alter, it's used in test_badge_redeem
         counter = "0x000000"
 
         # Sending request to create a Tag

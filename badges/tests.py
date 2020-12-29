@@ -163,8 +163,7 @@ class BadgeTestCase(TestCase):
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
             'cmac': binascii.hexlify(
-                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000001"))
-                               .decode("utf-8"),
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000001")).decode("utf-8"),
             'counter': "0x000001"
         }, content_type="application/json")
 
@@ -192,8 +191,7 @@ class BadgeTestCase(TestCase):
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
             'cmac': binascii.hexlify(
-                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000000"))
-                               .decode("utf-8"),
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000000")).decode("utf-8"),
             'counter': "0x000000"
         }, content_type="application/json")
 
@@ -204,8 +202,7 @@ class BadgeTestCase(TestCase):
         response = client.post('/v0/badges/redeem', {
             'uid': tag_uid,
             'cmac': binascii.hexlify(
-                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000002"))
-                               .decode("utf-8"),
+                crypto.calculate_cmac(tag_uid, "0b94831c5ecce72367dc70706a9bdec3", "0x000002")).decode("utf-8"),
             'counter': "0x000002"
         }, content_type="application/json")
 

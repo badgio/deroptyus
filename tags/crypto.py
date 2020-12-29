@@ -141,5 +141,6 @@ class InvalidAppKey(Exception):
 class InvalidCMAC(Exception):
     pass
 
+
 class MessageAuthenticationFailed(Exception):
     pass
