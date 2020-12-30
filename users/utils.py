@@ -23,13 +23,11 @@ def encode_user_to_json(users):
                 serialized_user["email"] = serialized_user["manager_info"]["email"]
             del serialized_user["manager_info"]["email"]
         elif isinstance(user, PromoterUser):
-            # Adding type to JSON
             serialized_user["promoter_info"] = encode_promoter_to_json(user)
             if "email" not in serialized_user:
                 serialized_user["email"] = serialized_user["promoter_info"]["email"]
             del serialized_user["promoter_info"]["email"]
         elif isinstance(user, AppUser):
-            # Adding type to JSON
             serialized_user["mobile_info"] = encode_apper_to_json(user)
             if "email" not in serialized_user:
                 serialized_user["email"] = serialized_user["mobile_info"]["email"]
