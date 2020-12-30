@@ -3,8 +3,10 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 import tags.queries as tags_queries
 import tags.utils as tags_utils
-from firebase.auth import InvalidIdToken, NoTokenProvided
+
+from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from tags import crypto
+
 from . import queries, utils
 from .models import Badge
 
@@ -17,7 +19,7 @@ def badges(request):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -40,7 +42,7 @@ def crud_badge(request, uuid):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -65,7 +67,7 @@ def redeem(request):
     # Authenticating user
     try:
         user = authenticate(request)
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 

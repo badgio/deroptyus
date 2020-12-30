@@ -88,7 +88,7 @@ def decode_location_from_json(data, admin):
         if 'twitter' in json_data:
             location["twitter"] = json_data.get("twitter")
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return location

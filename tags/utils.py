@@ -39,7 +39,7 @@ def decode_tag_from_json(data):
             'location': json_data.get("location"),
         }
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return tag
@@ -54,7 +54,7 @@ def decode_redeem_info_from_json(data):
             'cmac': json_data.get("cmac"),
         }
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return info
