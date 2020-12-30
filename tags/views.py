@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided
-from . import queries, utils
+from . import queries, utils, crypto
 from .models import Tag
 
 
@@ -79,6 +79,8 @@ def handle_create_tag(request, user):
         # Executing the query
         try:
             created_tag = queries.create_tag(tag, user.id)
+        except (crypto.InvalidUID, crypto.InvalidCounter, crypto.InvalidAppKey) as e:
+            return HttpResponse(status=400, reason=f"Bad Request: {e}")
         except queries.NotAValidLocation:
             return HttpResponse(status=400, reason="Bad Request: A valid Location UUID must be provided")
 
@@ -143,7 +145,8 @@ def handle_patch_tag(request, uid, user):
         # Executing query
         try:
             updated_tag = queries.patch_tag_by_uid(uid, unserialized_patch_tag)
-
+        except crypto.InvalidAppKey as e:
+            return HttpResponse(status=400, reason=f"Bad Request: {e}")
         except Tag.DoesNotExist:
             return HttpResponse(status=404, reason="Not Found: No tag by that UID")
         except queries.NotAValidLocation:
