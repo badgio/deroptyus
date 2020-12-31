@@ -1,12 +1,42 @@
 from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from firebase.auth import InvalidIdToken, NoTokenProvided
 from . import queries, utils
 from .models import Location
+from .filters import LocationFilter
 
 
 # Views
+
+def filter_location(request):
+    f = LocationFilter(request.GET, request=request, queryset=Location.objects.all()).qs
+
+    serialized_locations = utils.encode_location_to_json(f)
+
+    return JsonResponse(serialized_locations, safe=False)
+
+
+def location_paginator_filter(request):
+    f = LocationFilter(request.GET, queryset=Location.objects.all()).qs
+
+    page_size = request.GET.get('page_size')
+    if page_size:
+        paginator = Paginator(f, page_size)
+    else:
+        paginator = Paginator(f, 50)
+
+    page = request.GET.get('page')
+    try:
+        response = paginator.page(page)
+    except PageNotAnInteger:
+        response = paginator.page(1)
+    except EmptyPage:
+        response = paginator.page(paginator.num_pages)
+
+    return JsonResponse(utils.encode_location_to_json(response), safe=False)
+
 
 def locations(request):
     # Authenticating user

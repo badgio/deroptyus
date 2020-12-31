@@ -1,5 +1,6 @@
 import uuid
 
+import django_filters
 from django.db import models
 
 from users.models import ManagerUser
@@ -27,3 +28,9 @@ class Location(models.Model):
 
     def __str__(self):
         return str(self.uuid)
+
+
+class LocationFilter(django_filters.FilterSet):
+    class Meta:
+        model = Location
+        fields = ['status', 'name', 'website', 'manager__email']

@@ -3,6 +3,7 @@ import uuid
 from django.db import models
 from django.utils import timezone
 
+import django_filters
 from locations.models import Location
 from users.models import AppUser, PromoterUser
 
@@ -36,3 +37,9 @@ class Badge(models.Model):
 class RedeemedBadges(models.Model):
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     badge = models.ForeignKey(Badge, on_delete=models.CASCADE)
+
+
+class BadgeFilter(django_filters.FilterSet):
+    class Meta:
+        model = Badge
+        fields = ['uuid', 'name', 'description', 'status', 'start_date', 'end_date', 'location__uuid', 'promoter__email']
