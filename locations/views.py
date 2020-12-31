@@ -2,7 +2,7 @@ from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from firebase.auth import InvalidIdToken, NoTokenProvided
+from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import queries, utils
 from .models import Location
 from .filters import LocationFilter
@@ -44,7 +44,7 @@ def locations(request):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -67,7 +67,7 @@ def crud_location(request, uuid):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -215,3 +215,43 @@ def handle_delete_location(request, uuid, user):
         return HttpResponse(status=200)
     else:
         return HttpResponse(status=400, reason="Bad request: Failed to delete")
+
+
+def stats_location(request, uuid):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == 'GET':
+
+        return handle_get_stats_location(request, uuid, user)
+
+    else:
+
+        return HttpResponseNotAllowed(['GET'])
+
+
+def handle_get_stats_location(request, uuid, user):
+    try:
+        location = queries.get_location_by_uuid(uuid)
+    except Location.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No Location by that UUID")
+
+    # Checking if it's admin or the manager that created the location
+    if not user.has_perm('locations.view_stats') and location.manager.user != user:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view statistics about this location")
+
+    # Executing the query
+    statistics = queries.get_location_stats(uuid)
+
+    # Serializing
+    # serialized_statistics = utils.encode_statistics_to_json(statistics)
+
+    return JsonResponse(statistics, safe=False)

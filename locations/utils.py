@@ -42,7 +42,7 @@ def encode_location_to_json(locations):
                                                                 'uuid', 'name',
                                                                 'description', 'website',
                                                                 'latitude', 'longitude',
-                                                                'facebook', 'instagram',
+                                                                'facebook', 'instagram', 'twitter',
                                                                 'status', 'image', 'manager']))
 
     image_serialized_locations = []
@@ -70,18 +70,34 @@ def decode_location_from_json(data, admin):
         location = {
             'name': json_data.get("name"),
             'description': json_data.get("description"),
-            'latitude': json_data.get("latitude"),
-            'longitude': json_data.get("longitude"),
-            'website': json_data.get("website"),
-            'image': json_data.get("image"),
-            'facebook': json_data.get("facebook"),
-            'instagram': json_data.get("instagram"),
             'status': json_data.get("status") if admin else Status.PENDING,  # Only admin can change status
         }
-    except json.JSONDecodeError:
+
+        if 'latitude' in json_data:
+            location["latitude"] = json_data.get("latitude")
+        if 'longitude' in json_data:
+            location["longitude"] = json_data.get("longitude")
+        if 'website' in json_data:
+            location["website"] = json_data.get("website")
+        if 'image' in json_data:
+            location["image"] = json_data.get("image")
+        if 'facebook' in json_data:
+            location["facebook"] = json_data.get("facebook")
+        if 'instagram' in json_data:
+            location["instagram"] = json_data.get("instagram")
+        if 'twitter' in json_data:
+            location["twitter"] = json_data.get("twitter")
+
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return location
+
+
+def encode_statistics_to_json(data):
+    json_data = data
+
+    return json_data
 
 
 class InvalidJSONData(Exception):

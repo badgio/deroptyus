@@ -19,7 +19,7 @@ class FirebaseBackend(BaseBackend):
         firebase_token = firebase_token.split(" ").pop()
 
         try:
-            decoded_token = auth.verify_id_token(firebase_token)
+            decoded_token = auth.verify_id_token(firebase_token, app=self.app)
         except Exception:
             raise InvalidIdToken()
 
@@ -28,7 +28,11 @@ class FirebaseBackend(BaseBackend):
 
         firebase_id = decoded_token.get("uid")
 
-        firebase_user = FirebaseUser.objects.get(id=firebase_id)
+        try:
+            firebase_user = FirebaseUser.objects.get(id=firebase_id)
+        except FirebaseUser.DoesNotExist:
+            raise FirebaseUserDoesNotExist()
+
         user = firebase_user.user
 
         return user
@@ -36,7 +40,7 @@ class FirebaseBackend(BaseBackend):
     def create_user_email_password(self, email, password):
 
         try:
-            firebase_user = auth.get_user_by_email(email)
+            firebase_user = auth.get_user_by_email(email, app=self.app)
         except auth.UserNotFoundError:
             firebase_user = auth.create_user(email=email, password=password, app=self.app)
 
@@ -44,7 +48,7 @@ class FirebaseBackend(BaseBackend):
 
     def get_user_by_id(self, user_id):
         try:
-            firebase_user = auth.get_user(user_id)
+            firebase_user = auth.get_user(user_id, app=self.app)
         except Exception:
             return None
 
@@ -52,7 +56,7 @@ class FirebaseBackend(BaseBackend):
 
     def get_user_by_email(self, email):
         try:
-            firebase_user = auth.get_user_by_email(email)
+            firebase_user = auth.get_user_by_email(email, app=self.app)
         except auth.UserNotFoundError:
             return None
 
@@ -64,12 +68,31 @@ class FirebaseBackend(BaseBackend):
         except Exception:
             pass
 
+    def change_users_email(self, uid, email):
+        try:
+            auth.update_user(uid=uid, email=email, app=self.app)
+        except Exception:
+            raise FirebaseError()
+
+    def change_users_password(self, uid, password):
+        try:
+            auth.update_user(uid=uid, password=password, app=self.app)
+        except Exception:
+            raise FirebaseError()
+
+    def delete_user(self, uid):
+        auth.delete_user(uid, app=self.app)
+
     def delete_user_by_email(self, email):
         try:
             firebase_user = auth.get_user_by_email(email)
             auth.delete_user(firebase_user.uid, app=self.app)
         except auth.UserNotFoundError:
             pass
+
+
+class FirebaseUserDoesNotExist(Exception):
+    pass
 
 
 class FirebaseError(Exception):

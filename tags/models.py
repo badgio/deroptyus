@@ -16,7 +16,7 @@ class Tag(models.Model):
         return str(self.uid)
 
 
-class RedeemedCounters(models.Model):
+class RedeemedCounter(models.Model):
     counter = models.IntegerField()
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
 

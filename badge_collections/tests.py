@@ -1,17 +1,18 @@
 import json
+from datetime import datetime, timedelta
 
 from django.test import Client, TestCase
 
-from locations.tests import LocationTestCase
+from badges.tests import BadgeTestCase
 from users.tests import UsersTestCase
 
 
-class BadgeTestCase(TestCase):
+class CollectionTestCase(TestCase):
 
-    def test_reward_get_all(self):
+    def test_collection_get_all(self):
         """
-        Test: Get all rewards
-        Path: /v0/rewards/
+        Test: Get all collections
+        Path: /v0/collections/
         """
         # Logging in
         users = UsersTestCase()
@@ -19,32 +20,32 @@ class BadgeTestCase(TestCase):
                                                         email="promoter@test.com",
                                                         password="test_password"))
 
-        response = client.get('/v0/rewards/')
+        response = client.get('/v0/collections/')
         self.assertEqual(response.status_code, 200)
 
         # Logging out
         users.log_out()
 
     @staticmethod
-    def __create_reward__(client, location=None):
-        locations = LocationTestCase()
+    def __create_collection__(client, badges=None):
+        name = "Bom Jesus"
+        description = "Santuário do Bom Jesus do Monte"
+        start_date = datetime.utcnow()
+        end_date = datetime.utcnow() + timedelta(days=30)
 
-        name = "Nata"
-        description = "Oferta da Nata na compra do Café"
-        time_redeem = 30 * 60
-
-        # Sending request to create a Badge
-        return client.post('/v0/rewards/', {
+        # Sending request to create a Collection
+        return client.post('/v0/collections/', {
             'name': name,
             'description': description,
-            'time_redeem': time_redeem,
-            'location': location if location else locations.get_location()
+            'start_date': start_date,
+            'end_date': end_date,
+            'badges': badges if badges else [BadgeTestCase().get_badge() for _ in range(3)]
         }, content_type="application/json")
 
-    def test_reward_create(self):
+    def test_collection_create(self):
         """
-        Test: Create a new reward
-        Path: /v0/rewards/
+        Test: Create a new collection
+        Path: /v0/collections/
         """
         # Logging in
         users = UsersTestCase()
@@ -52,15 +53,15 @@ class BadgeTestCase(TestCase):
                                                         email="promoter@test.com",
                                                         password="test_password"))
 
-        response = self.__create_reward__(client)
+        response = self.__create_collection__(client)
 
-        # Asserting the success of the reward creation
+        # Asserting the success of the collection creation
         self.assertEqual(response.status_code, 201)
 
-    def test_reward_get_with_uuid(self):
+    def test_collection_get_with_uuid(self):
         """
-        Test: Get a reward with UUID
-        Path: /v0/rewards/uuid
+        Test: Get a collection with UUID
+        Path: /v0/collections/uuid
         """
         # Logging in
         users = UsersTestCase()
@@ -68,21 +69,21 @@ class BadgeTestCase(TestCase):
                                                         email="promoter@test.com",
                                                         password="test_password"))
 
-        response = self.__create_reward__(client)
+        response = self.__create_collection__(client)
 
         uuid = json.loads(response.content)['uuid']
-        response = client.get(f'/v0/rewards/{uuid}')
+        response = client.get(f'/v0/collections/{uuid}')
 
-        # Asserting the success of retrieving a reward
+        # Asserting the success of retrieving a collection
         self.assertEqual(response.status_code, 200)
 
         # Logging out
         users.log_out()
 
-    def test_reward_patch_with_uuid(self):
+    def test_collection_patch_with_uuid(self):
         """
-        Test: Patch a reward with uuid
-        Path: /v0/rewards/uuid
+        Test: Patch a collection with uuid
+        Path: /v0/collections/uuid
         """
         # Logging in
         users = UsersTestCase()
@@ -90,24 +91,25 @@ class BadgeTestCase(TestCase):
                                                         email="promoter@test.com",
                                                         password="test_password"))
 
-        response = self.__create_reward__(client)
+        response = self.__create_collection__(client)
 
-        # Sending request to update a Badge
+        # Sending request to update a Collection
         uuid = json.loads(response.content)['uuid']
-        response = client.patch(f'/v0/rewards/{uuid}', {
+        response = client.patch(f'/v0/collections/{uuid}', {
+            'name': "New name",
             'description': "New description",
         }, content_type="application/json")
 
-        # Asserting the success of the reward update
+        # Asserting the success of the collection update
         self.assertEqual(response.status_code, 200)
 
         # Logging out
         users.log_out()
 
-    def test_reward_delete_with_uuid(self):
+    def test_collection_delete_with_uuid(self):
         """
-        Test: Delete a reward with uuid
-        Path: /v0/rewards/uuid
+        Test: Delete a collection with uuid
+        Path: /v0/collections/uuid
         """
         # Logging in
         users = UsersTestCase()
@@ -115,12 +117,12 @@ class BadgeTestCase(TestCase):
                                                         email="promoter@test.com",
                                                         password="test_password"))
 
-        response = self.__create_reward__(client)
+        response = self.__create_collection__(client)
 
         uuid = json.loads(response.content)['uuid']
-        response = client.delete(f'/v0/rewards/{uuid}')
+        response = client.delete(f'/v0/collections/{uuid}')
 
-        # Asserting the success of the deleting a reward
+        # Asserting the success of the deleting a collection
         self.assertEqual(response.status_code, 200)
 
         # Logging out

@@ -30,6 +30,8 @@ class Command(BaseCommand):
         appers_permission_codenames = [
             'view_location',
             'view_badge',
+            'view_collection',
+            'check_collection_status',
             'redeem_badge',
             'redeem_reward',
         ]
@@ -56,6 +58,7 @@ class Command(BaseCommand):
             'add_location',
             'view_location',
             'view_badge',
+            'view_collection',
         ]
 
         # Clearing previous permissions
@@ -80,7 +83,9 @@ class Command(BaseCommand):
             'add_badge',
             'view_badge',
             'add_reward',
-            'view_reward'
+            'view_reward',
+            'add_collection',
+            'view_collection',
         ]
 
         # Clearing previous permissions
@@ -102,6 +107,7 @@ class Command(BaseCommand):
         # Listing every permission that an Admin should have
         admins_permission_codenames = [
             'view_location',
+            'locations.view_stats',
             'change_location',
             'delete_location',
             'view_badge',
@@ -114,6 +120,9 @@ class Command(BaseCommand):
             'view_reward',
             'change_reward',
             'delete_reward',
+            'view_collection',
+            'change_collection',
+            'delete_collection',
         ]
 
         # Clearing previous permissions

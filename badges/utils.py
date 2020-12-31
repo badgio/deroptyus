@@ -75,7 +75,6 @@ def decode_badge_from_json(data, admin):
             'name': json_data.get("name"),
             'description': json_data.get("description"),
             'location': json_data.get("location"),
-            'image': json_data.get("image"),
             'status': json_data.get("status") if admin else Status.PENDING,  # Only admin can change status
         }
 
@@ -93,7 +92,10 @@ def decode_badge_from_json(data, admin):
             except Exception:
                 raise NotAValidEndDate()
 
-    except json.JSONDecodeError:
+        if "image" in json_data:
+            badge["image"] = json_data.get("image")
+
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return badge
