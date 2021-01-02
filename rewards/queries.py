@@ -1,16 +1,15 @@
-import random
 import copy
+import random
 from datetime import datetime, timedelta
-
 
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badge_collections import queries as badge_collections_queries
-from . import utils
 from locations.models import Location
 from users.models import PromoterUser, AppUser
+from . import utils
 from .models import Reward, RedeemedReward
 
 CODE_LENGTH = 6
@@ -334,7 +333,7 @@ def get_weekly_stats(map_stats):
 
     if number_male_gender > number_female_gender:
         most_common_gender = male_gender
-    elif number_female_gender!=0:
+    elif number_female_gender != 0:
         most_common_gender = female_gender
     else:
         most_common_gender = None
@@ -347,7 +346,7 @@ def get_weekly_stats(map_stats):
         most_common_age_range = young
     elif adult_visitors > young_visitors and adult_visitors > elder_visitors:
         most_common_age_range = adult
-    elif elder_visitors !=0 :
+    elif elder_visitors != 0:
         most_common_age_range = elder
     else:
         most_common_age_range = None
@@ -365,8 +364,10 @@ def get_weekly_stats(map_stats):
 class NoRewardByThatCode(Exception):
     pass
 
+
 class RewardAlreadyRedeemed(Exception):
     pass
+
 
 class NotAValidLocation(Exception):
     pass

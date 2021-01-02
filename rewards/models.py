@@ -38,4 +38,3 @@ class RedeemedReward(models.Model):
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     reward = models.ForeignKey(Reward, on_delete=models.RESTRICT)
     redeemed = models.BooleanField(default=False)
-

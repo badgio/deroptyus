@@ -7,7 +7,6 @@ from django.db.models import Q
 
 from badges import queries as badges_queries
 from badges.models import RedeemedBadge
-from rewards.models import RedeemedReward
 from rewards import queries as rewards_queries
 from rewards.models import Reward, RedeemedReward
 from users.models import PromoterUser, AppUser
@@ -228,24 +227,22 @@ def get_collection_stats(collection_uuid):
     map_stats_chart_1[adult] = {}
     map_stats_chart_1[elder] = {}
     map_stats_chart_1[countries] = {}
-    badge_uuids=[]
+    badge_uuids = []
 
     map_stats_week = copy.deepcopy(map_stats_chart_1)
 
     for collection_badge in CollectionBadge.objects.filter(collection__uuid=collection_uuid):
         badge_uuids.append(collection_badge.badge.uuid)
 
-
-
-    stats_week = get_collection_weekly_report(collection_uuid,badge_uuids, map_stats_week)
+    stats_week = get_collection_weekly_report(collection_uuid, badge_uuids, map_stats_week)
     stats_chart_1 = get_collection_main_chart(badge_uuids, map_stats_chart_1)
     stats_chart_2 = get_collection_secondary_chart(badge_uuids, map_stats_chart_2)
     stats_table = get_collection_table_data(badge_uuids, map_stats_table)
 
-    return [stats_week, stats_chart_1, stats_chart_2,stats_table]
+    return [stats_week, stats_chart_1, stats_chart_2, stats_table]
 
 
-def get_collection_weekly_report(collection_uuid,badge_uuids, map_stats):
+def get_collection_weekly_report(collection_uuid, badge_uuids, map_stats):
     last_week_date = (datetime.now() - timedelta(days=7)).date()
     last_week_datetime = datetime.combine(last_week_date, datetime.max.time())
 
@@ -257,10 +254,9 @@ def get_collection_weekly_report(collection_uuid,badge_uuids, map_stats):
     for redeemed_reward in weekly_redeemed_rewards:
         redeemed_rewards += 1
 
-
     for badge_uuid in badge_uuids:
         weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid),
-                                                          Q(time_redeemed__gt=last_week_datetime))
+                                                              Q(time_redeemed__gt=last_week_datetime))
         for redeemed_badge in weekly_redeemed_badges:
             date = redeemed_badge.time_redeemed
             user = redeemed_badge.app_user
@@ -286,25 +282,25 @@ def get_collection_main_chart(badge_uuids, map_stats):
 
     return map_stats
 
+
 def get_collection_table_data(badge_uuids, map_stats):
     for badge_uuid in badge_uuids:
         redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
         for redeemed_badge in redeemed_badges:
             badge = redeemed_badge.badge
-            location=badge.location.name
+            location = badge.location.name
             if location not in map_stats:
                 map_stats[location] = 1
             else:
-                map_stats[location]+= 1
+                map_stats[location] += 1
 
-    #sorted_locations=sorted(map_stats.items(), key=lambda x: x[1], reverse=True)
+    # sorted_locations=sorted(map_stats.items(), key=lambda x: x[1], reverse=True)
     dict(sorted(map_stats.items(), key=lambda item: item[1]))
 
     return map_stats
 
 
 def get_collection_secondary_chart(badge_uuids, map_stats):
-
     for badge_uuid in badge_uuids:
         redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
         for redeemed_badge in redeemed_badges:
@@ -406,7 +402,7 @@ def get_weekly_stats(map_stats):
 
     if number_male_gender > number_female_gender:
         most_common_gender = male_gender
-    elif number_female_gender!=0:
+    elif number_female_gender != 0:
         most_common_gender = female_gender
     else:
         most_common_gender = None
@@ -419,7 +415,7 @@ def get_weekly_stats(map_stats):
         most_common_age_range = young
     elif adult_visitors > young_visitors and adult_visitors > elder_visitors:
         most_common_age_range = adult
-    elif elder_visitors !=0 :
+    elif elder_visitors != 0:
         most_common_age_range = elder
     else:
         most_common_age_range = None

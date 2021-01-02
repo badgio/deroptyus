@@ -57,6 +57,7 @@ def crud_location(request, uuid):
 
         return HttpResponseNotAllowed(['GET', 'PATCH', 'DELETE'])
 
+
 def stats_location(request, uuid):
     # Authenticating user
     try:
@@ -74,6 +75,7 @@ def stats_location(request, uuid):
     else:
 
         return HttpResponseNotAllowed(['GET'])
+
 
 # Auxiliary functions for the Views
 

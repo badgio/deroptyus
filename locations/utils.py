@@ -93,6 +93,7 @@ def decode_location_from_json(data, admin):
 
     return location
 
+
 class InvalidJSONData(Exception):
     pass
 

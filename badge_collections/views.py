@@ -251,6 +251,7 @@ def handle_get_collection_status(request, uuid, user):
                             reason="Forbidden: Current user does not have the permission"
                                    " required to check the completion status of a collection")
 
+
 def stats_collection(request, uuid):
     # Authenticating user
     try:

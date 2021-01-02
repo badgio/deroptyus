@@ -62,8 +62,8 @@ def redeem_badges_by_location(location_id, user_id):
                                              Q(start_date__lte=datetime.now()),
                                              Q(status=Status.APPROVED),
                                              Q(end_date__isnull=True) | Q(end_date__gte=datetime.now())).exclude(
-                                             Q(id__in=RedeemedBadge.objects.filter(app_user=apper)
-                                               .values_list('badge', flat=True)))
+        Q(id__in=RedeemedBadge.objects.filter(app_user=apper)
+          .values_list('badge', flat=True)))
 
     badges_redeemed = []
     # Linking the App User with the Badges
@@ -156,6 +156,7 @@ def patch_badge_by_uuid(badge_uuid, badge):
     badge_update.save()
 
     return badge_update
+
 
 def get_badge_stats(badge_uuid):
     map_stats_chart_1 = {}
@@ -317,7 +318,7 @@ def get_weekly_stats(map_stats):
 
     if number_male_gender > number_female_gender:
         most_common_gender = male_gender
-    elif number_female_gender!=0:
+    elif number_female_gender != 0:
         most_common_gender = female_gender
     else:
         most_common_gender = None
@@ -330,7 +331,7 @@ def get_weekly_stats(map_stats):
         most_common_age_range = young
     elif adult_visitors > young_visitors and adult_visitors > elder_visitors:
         most_common_age_range = adult
-    elif elder_visitors !=0 :
+    elif elder_visitors != 0:
         most_common_age_range = elder
     else:
         most_common_age_range = None
@@ -343,8 +344,6 @@ def get_weekly_stats(map_stats):
     stats['Redeemed_rewards'] = redeemed_rewards
 
     return stats
-
-
 
 
 class NotAValidLocation(Exception):

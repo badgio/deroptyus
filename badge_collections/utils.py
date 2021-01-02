@@ -114,7 +114,6 @@ def encode_collection_status(collection_status, reward):
     if not reward:
         return {'collection_status': collection_status}
 
-
     serialized_reward = json.loads(serializers.serialize("json",
                                                          [reward],
                                                          fields=[

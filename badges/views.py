@@ -3,10 +3,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 import tags.queries as tags_queries
 import tags.utils as tags_utils
-
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from tags import crypto
-
 from . import queries, utils
 from .models import Badge
 
@@ -78,6 +76,7 @@ def redeem(request):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+
 def stats_badge(request, uuid):
     # Authenticating user
     try:
@@ -95,6 +94,7 @@ def stats_badge(request, uuid):
     else:
 
         return HttpResponseNotAllowed(['GET'])
+
 
 # Auxiliary functions for the Views
 
@@ -277,6 +277,7 @@ def handle_redeem_badge(request, user):
         return HttpResponse(status=403,
                             reason="Forbidden: Current user does not have the permission"
                                    " required to redeem a badge")
+
 
 def handle_get_stats_badge(request, uuid, user):
     try:

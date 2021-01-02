@@ -73,6 +73,7 @@ def redeem(request):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+
 def stats_reward(request, uuid):
     # Authenticating user
     try:
@@ -90,6 +91,7 @@ def stats_reward(request, uuid):
     else:
 
         return HttpResponseNotAllowed(['GET'])
+
 
 # Auxiliary functions for the Views
 
@@ -247,7 +249,6 @@ def handle_redeem_reward(request, user):
             return HttpResponse(status=400,
                                 reason="Not Found: The Reward expired")
 
-
         # Serializing
         serialized_rewards = utils.encode_rewards_to_json([reward])[0]
         return JsonResponse(serialized_rewards, safe=False)
@@ -256,6 +257,7 @@ def handle_redeem_reward(request, user):
         return HttpResponse(status=403,
                             reason="Forbidden: Current user does not have the permission"
                                    " required to redeem a reward")
+
 
 def handle_get_stats_reward(request, uuid, user):
     try:
