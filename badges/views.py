@@ -3,7 +3,10 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 import tags.queries as tags_queries
 import tags.utils as tags_utils
-from firebase.auth import InvalidIdToken, NoTokenProvided
+
+from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
+from tags import crypto
+
 from . import queries, utils
 from .models import Badge
 
@@ -16,7 +19,7 @@ def badges(request):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -39,7 +42,7 @@ def crud_badge(request, uuid):
         user = authenticate(request)
         if not user:
             raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -64,7 +67,7 @@ def redeem(request):
     # Authenticating user
     try:
         user = authenticate(request)
-    except (InvalidIdToken, NoTokenProvided):
+    except (InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist):
         return HttpResponse(status=401,
                             reason="Unauthorized: Operation needs authentication")
 
@@ -253,16 +256,18 @@ def handle_redeem_badge(request, user):
 
             valid_badges = queries.redeem_badges_by_location(location_id, user.id)
 
-            if not valid_badges.count():
-                return HttpResponse(status=400,
-                                    reason="Bad Request: No Badge to redeem")
+        except (crypto.InvalidUID, crypto.InvalidCounter, crypto.InvalidAppKey, crypto.InvalidCMAC) as e:
+            return HttpResponse(status=400, reason=f"Bad Request: {e}")
+
+        except crypto.MessageAuthenticationFailed as e:
+            return HttpResponse(status=406, reason=f"Not Acceptable: {e}")
 
         except tags_queries.NotAValidTagUID:
             return HttpResponse(status=404,
                                 reason="Not Found: No Tag by that UID")
         except tags_queries.AlreadyRedeemedTag:
-            return HttpResponse(status=400,
-                                reason="Bad Request: The info provided refers to an already redeemed tag")
+            return HttpResponse(status=410,
+                                reason="Gone: The info provided refers to an already redeemed tag")
 
         # Serializing
         serialized_badges = utils.encode_badge_to_json(valid_badges)

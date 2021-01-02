@@ -34,11 +34,12 @@ def decode_tag_from_json(data):
         json_data = json.loads(data)
         tag = {
             'uid': json_data.get("uid"),
+            'counter': json_data.get("counter"),
             'app_key': json_data.get("app_key"),
             'location': json_data.get("location"),
         }
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return tag
@@ -49,11 +50,11 @@ def decode_redeem_info_from_json(data):
         json_data = json.loads(data)
         info = {
             'uid': json_data.get("uid"),
-            'counter': int(json_data.get("counter"), 16),
+            'counter': json_data.get("counter"),
             'cmac': json_data.get("cmac"),
         }
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return info

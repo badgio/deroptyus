@@ -104,7 +104,7 @@ def decode_collection_from_json(data, admin):
         if 'badges' in json_data:
             collection['badges'] = json_data.get('badges')
 
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         raise InvalidJSONData()
 
     return collection
