@@ -91,7 +91,7 @@ def decode_reward_from_json(data, admin):
         }
 
         if 'image' in json_data:
-            reward['image'] = json_data.get('image'),
+            reward['image'] = json_data.get('image')
         if 'time_redeem' in json_data:
             reward['time_redeem'] = int(json_data.get('time_redeem')) if json_data.get('time_redeem') else None
 

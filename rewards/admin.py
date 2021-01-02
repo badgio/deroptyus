@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Reward, RedeemableReward
+from .models import Reward, RedeemedReward
 
 admin.site.register(Reward)
-admin.site.register(RedeemableReward)
+admin.site.register(RedeemedReward)

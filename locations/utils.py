@@ -94,12 +94,6 @@ def decode_location_from_json(data, admin):
     return location
 
 
-def encode_statistics_to_json(data):
-    json_data = data
-
-    return json_data
-
-
 class InvalidJSONData(Exception):
     pass
 

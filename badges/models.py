@@ -30,6 +30,7 @@ class Badge(models.Model):
     class Meta:
         permissions = (
             ('redeem_badge', 'Can redeem Badge'),
+            ('view_stats', 'Can view statistics for a Badge'),
         )
 
 

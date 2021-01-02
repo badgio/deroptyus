@@ -58,6 +58,25 @@ def crud_location(request, uuid):
         return HttpResponseNotAllowed(['GET', 'PATCH', 'DELETE'])
 
 
+def stats_location(request, uuid):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == 'GET':
+
+        return handle_get_stats_location(request, uuid, user)
+
+    else:
+
+        return HttpResponseNotAllowed(['GET'])
+
+
 # Auxiliary functions for the Views
 
 
@@ -185,25 +204,6 @@ def handle_delete_location(request, uuid, user):
         return HttpResponse(status=200)
     else:
         return HttpResponse(status=400, reason="Bad request: Failed to delete")
-
-
-def stats_location(request, uuid):
-    # Authenticating user
-    try:
-        user = authenticate(request)
-        if not user:
-            raise NoTokenProvided()
-    except (InvalidIdToken, NoTokenProvided):
-        return HttpResponse(status=401,
-                            reason="Unauthorized: Operation needs authentication")
-
-    if request.method == 'GET':
-
-        return handle_get_stats_location(request, uuid, user)
-
-    else:
-
-        return HttpResponseNotAllowed(['GET'])
 
 
 def handle_get_stats_location(request, uuid, user):

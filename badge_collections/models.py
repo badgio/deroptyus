@@ -31,6 +31,7 @@ class Collection(models.Model):
     class Meta:
         permissions = (
             ('check_collection_status', 'Can check completion status of a Collection'),
+            ('view_stats', 'Can view statistics for a Collection'),
         )
 
 

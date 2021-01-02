@@ -28,11 +28,13 @@ class Reward(models.Model):
     class Meta:
         permissions = (
             ('redeem_reward', 'Can redeem Reward'),
+            ('view_stats', 'Can view statistics for a Reward'),
         )
 
 
-class RedeemableReward(models.Model):
+class RedeemedReward(models.Model):
     reward_code = models.CharField(max_length=6, primary_key=True)
     time_awarded = models.DateTimeField(auto_now_add=True, editable=False)
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     reward = models.ForeignKey(Reward, on_delete=models.RESTRICT)
+    redeemed = models.BooleanField(default=False)
