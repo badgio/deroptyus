@@ -114,12 +114,14 @@ def encode_collection_status(collection_status, reward):
     if not reward:
         return {'collection_status': collection_status}
 
+
     serialized_reward = json.loads(serializers.serialize("json",
                                                          [reward],
                                                          fields=[
                                                              'reward_code', 'time_awarded',
                                                              'reward']))[0]
 
+    raise Exception()
     reward_fields = serialized_reward['fields']
     if reward_fields.get('collection'):
         reward_fields['collection'] = reward_queries.get_str_by_pk(reward_fields.get('collection'))

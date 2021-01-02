@@ -6,6 +6,7 @@ from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badges.models import RedeemedBadge
+from rewards.models import RedeemedReward
 from users.models import ManagerUser
 from . import utils
 from .models import Location
@@ -137,6 +138,13 @@ def get_location_stats(location_uuid):
 def get_location_weekly_report(location_uuid, map_stats):
     last_week_date = (datetime.now() - timedelta(days=7)).date()
     last_week_datetime = datetime.combine(last_week_date, datetime.max.time())
+    redeemed_rewards = 0
+
+    weekly_redeemed_rewards = RedeemedReward.objects.filter(Q(reward__location__uuid=location_uuid),
+                                                            Q(time_awarded__gt=last_week_datetime))
+
+    for redeemed_reward in weekly_redeemed_rewards:
+        redeemed_rewards+=1
 
     weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__location__uuid=location_uuid),
                                                           Q(time_redeemed__gt=last_week_datetime))
@@ -149,6 +157,7 @@ def get_location_weekly_report(location_uuid, map_stats):
 
         get_all_stats(user, weekday, map_stats)
 
+    map_stats['Redeemed_rewards'] = redeemed_rewards
     weekly_stats = get_weekly_stats(map_stats)
 
     return weekly_stats
@@ -244,7 +253,6 @@ def get_secondary_chart_stats(date, hour, map_stats):
 
 def get_weekly_stats(map_stats):
     total_visitors = 0
-    redeemed_rewards = 0
     young = 'Young'
     adult = 'Adult'
     elder = 'Elder'
@@ -271,8 +279,10 @@ def get_weekly_stats(map_stats):
 
     if number_male_gender > number_female_gender:
         most_common_gender = male_gender
-    else:
+    elif number_female_gender!=0:
         most_common_gender = female_gender
+    else:
+        most_common_gender = None
 
     young_visitors = len(map_stats[young])
     adult_visitors = len(map_stats[adult])
@@ -282,14 +292,16 @@ def get_weekly_stats(map_stats):
         most_common_age_range = young
     elif adult_visitors > young_visitors and adult_visitors > elder_visitors:
         most_common_age_range = adult
-    else:
+    elif elder_visitors !=0 :
         most_common_age_range = elder
+    else:
+        most_common_age_range = None
 
     stats['Total_visitors'] = total_visitors
     stats['Busiest_day'] = busiest_day
     stats['Most_common_age_range'] = most_common_age_range
     stats['Most_common_country'] = most_common_country
     stats['Most_common_gender'] = most_common_gender
-    stats['Redeemed_rewards'] = redeemed_rewards
+    stats['Redeemed_rewards'] = map_stats['Redeemed_rewards']
 
     return stats

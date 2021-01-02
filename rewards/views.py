@@ -73,6 +73,23 @@ def redeem(request):
     else:
         return HttpResponseNotAllowed(['POST'])
 
+def stats_reward(request, uuid):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == 'GET':
+
+        return handle_get_stats_reward(request, uuid, user)
+
+    else:
+
+        return HttpResponseNotAllowed(['GET'])
 
 # Auxiliary functions for the Views
 
@@ -223,9 +240,13 @@ def handle_redeem_reward(request, user):
         except queries.NoRewardByThatCode:
             return HttpResponse(status=404,
                                 reason="Bad Request: No Reward to redeem by that code")
+        except queries.RewardAlreadyRedeemed:
+            return HttpResponse(status=410,
+                                reason="Gone: Reward by that code already redeemed")
         except queries.RewardNoLongerValid:
             return HttpResponse(status=400,
                                 reason="Not Found: The Reward expired")
+
 
         # Serializing
         serialized_rewards = utils.encode_rewards_to_json([reward])[0]
@@ -235,3 +256,23 @@ def handle_redeem_reward(request, user):
         return HttpResponse(status=403,
                             reason="Forbidden: Current user does not have the permission"
                                    " required to redeem a reward")
+
+def handle_get_stats_reward(request, uuid, user):
+    try:
+        reward = queries.get_reward_by_uuid(uuid)
+    except Reward.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No Reward by that UUID")
+
+    # Checking if it's admin or the promoter that created the badge
+    if not user.has_perm('rewards.view_stats') and reward.promoter.user != user:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view statistics about this reward")
+
+    # Executing the query
+    statistics = queries.get_reward_stats(uuid)
+
+    # Serializing
+    # serialized_statistics = utils.encode_statistics_to_json(statistics)
+
+    return JsonResponse(statistics, safe=False)

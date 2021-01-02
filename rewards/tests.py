@@ -125,3 +125,27 @@ class BadgeTestCase(TestCase):
 
         # Logging out
         users.log_out()
+
+    def test_reward_statistics(self):
+        """
+        Test: Get a statistics with reward UUID
+        Path: /v0/collections/uuid/statistics
+        """
+        # Logging in
+        users = UsersTestCase()
+        auth_token = users.log_in(type="promoters", email="promoter@test.com", password="test_password")
+        client = Client(HTTP_AUTHORIZATION=auth_token)
+
+        response = self.__create_reward__(client)
+
+        uuid = json.loads(response.content)['uuid']
+        response = client.get(f'/v0/rewards/{uuid}/statistics')
+
+        # Asserting the success of retrieving a collection
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content)
+        self.assertEqual(data[0]['Redeemed_rewards'], 0)
+
+        # Logging out
+        users.log_out()

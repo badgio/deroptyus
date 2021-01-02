@@ -127,3 +127,27 @@ class CollectionTestCase(TestCase):
 
         # Logging out
         users.log_out()
+
+    def test_collection_statistics(self):
+        """
+        Test: Get a statistics with collection UUID
+        Path: /v0/collections/uuid/statistics
+        """
+        # Logging in
+        users = UsersTestCase()
+        auth_token = users.log_in(type="promoters", email="promoter@test.com", password="test_password")
+        client = Client(HTTP_AUTHORIZATION=auth_token)
+
+        response = self.__create_collection__(client)
+
+        uuid = json.loads(response.content)['uuid']
+        response = client.get(f'/v0/collections/{uuid}/statistics')
+
+        # Asserting the success of retrieving a collection
+        self.assertEqual(response.status_code, 200)
+
+        data = json.loads(response.content)
+        self.assertEqual(data[0]['Total_visitors'], 0)
+
+        # Logging out
+        users.log_out()
