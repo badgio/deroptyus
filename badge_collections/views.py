@@ -248,3 +248,43 @@ def handle_get_collection_status(request, uuid, user):
         return HttpResponse(status=403,
                             reason="Forbidden: Current user does not have the permission"
                                    " required to check the completion status of a collection")
+
+
+def stats_collection(request, uuid):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == 'GET':
+
+        return handle_get_stats_collection(request, uuid, user)
+
+    else:
+
+        return HttpResponseNotAllowed(['GET'])
+
+
+def handle_get_stats_collection(request, uuid, user):
+    try:
+        collection = queries.get_collection_by_uuid(uuid)
+    except Collection.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No Collection by that UUID")
+
+    # Checking if it's admin or the promoter that created the collection
+    if not user.has_perm('badges_collections.view_stats') and collection.promoter.user != user:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view statistics about this collection")
+
+    # Executing the query
+    statistics = queries.get_collection_stats(uuid)
+
+    # Serializing
+    # serialized_statistics = utils.encode_statistics_to_json(statistics)
+
+    return JsonResponse(statistics, safe=False)
