@@ -3,10 +3,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 import tags.queries as tags_queries
 import tags.utils as tags_utils
-
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from tags import crypto
-
 from . import queries, utils
 from .models import Badge
 
@@ -77,6 +75,25 @@ def redeem(request):
 
     else:
         return HttpResponseNotAllowed(['POST'])
+
+
+def stats_badge(request, uuid):
+    # Authenticating user
+    try:
+        user = authenticate(request)
+        if not user:
+            raise NoTokenProvided()
+    except (InvalidIdToken, NoTokenProvided):
+        return HttpResponse(status=401,
+                            reason="Unauthorized: Operation needs authentication")
+
+    if request.method == 'GET':
+
+        return handle_get_stats_badge(request, uuid, user)
+
+    else:
+
+        return HttpResponseNotAllowed(['GET'])
 
 
 # Auxiliary functions for the Views
@@ -260,3 +277,24 @@ def handle_redeem_badge(request, user):
         return HttpResponse(status=403,
                             reason="Forbidden: Current user does not have the permission"
                                    " required to redeem a badge")
+
+
+def handle_get_stats_badge(request, uuid, user):
+    try:
+        badge = queries.get_badge_by_uuid(uuid)
+    except Badge.DoesNotExist:
+        return HttpResponse(status=404, reason="Not Found: No Badge by that UUID")
+
+    # Checking if it's admin or the promoter that created the badge
+    if not user.has_perm('badges.view_stats') and badge.promoter.user != user:
+        return HttpResponse(status=403,
+                            reason="Forbidden: Current user does not have the permission"
+                                   " required to view statistics about this badge")
+
+    # Executing the query
+    statistics = queries.get_badge_stats(uuid)
+
+    # Serializing
+    # serialized_statistics = utils.encode_statistics_to_json(statistics)
+
+    return JsonResponse(statistics, safe=False)

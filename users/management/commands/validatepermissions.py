@@ -108,6 +108,9 @@ class Command(BaseCommand):
         admins_permission_codenames = [
             'view_location',
             'locations.view_stats',
+            'badges.view_stats',
+            'rewards.view_stats',
+            'badges_collections.view_stats',
             'change_location',
             'delete_location',
             'view_badge',
