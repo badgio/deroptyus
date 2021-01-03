@@ -39,5 +39,5 @@ class Location(models.Model):
 class LocationFilter(django_filters.FilterSet):
     class Meta:
         model = Location
-        fields = ['uuid', 'status', 'name', 'website', 'manager__email', 'latitude', 'longitude', 'instagram',
-                  'facebook', 'twitter']
+        fields = ['uuid', 'status', 'name', 'website', 'manager__email', 'latitude',
+                  'longitude', 'instagram', 'facebook', 'twitter']

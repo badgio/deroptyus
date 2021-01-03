@@ -12,6 +12,7 @@ from .utils import paginator
 
 # Views
 
+
 def badges(request):
     # Authenticating user
     try:

@@ -100,6 +100,7 @@ def encode_statistics_to_json(data):
 
     return json_data
 
+
 def paginator(request, f):
     page_size = request.GET.get('page_size')
     f = f.order_by('status')

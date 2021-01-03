@@ -8,6 +8,7 @@ from .utils import paginator
 
 # Views
 
+
 def collections(request):
     # Authenticating user
     try:
