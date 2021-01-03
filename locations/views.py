@@ -3,8 +3,7 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import queries, utils
-from .models import Location
-from .filters import LocationFilter
+from .models import Location, LocationFilter
 from .utils import paginator
 
 
