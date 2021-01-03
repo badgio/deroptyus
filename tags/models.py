@@ -1,5 +1,6 @@
 from django.db import models
 
+import django_filters
 from locations.models import Location
 from users.models import AdminUser
 
@@ -18,3 +19,9 @@ class Tag(models.Model):
 class RedeemedCounter(models.Model):
     counter = models.IntegerField()
     tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+
+
+class TagFilter(django_filters.FilterSet):
+    class Meta:
+        model = Tag
+        fields = ['uid', 'admin__email', 'location__uuid', 'last_counter']

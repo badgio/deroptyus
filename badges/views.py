@@ -5,11 +5,13 @@ import tags.queries as tags_queries
 import tags.utils as tags_utils
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from tags import crypto
-from . import queries, utils
-from .models import Badge
 
+from . import queries, utils
+from .models import Badge, BadgeFilter
+from .utils import paginator
 
 # Views
+
 
 def badges(request):
     # Authenticating user
@@ -145,13 +147,11 @@ def handle_get_badges(request, user):
     # Checking permissions (possibly needs the permission to see if the badge is related to this user)
     if user.has_perm('badges.view_badge'):
 
-        # Executing the query
-        all_badges = queries.get_badges()
+        f = BadgeFilter(request.GET, queryset=Badge.objects.all()).qs
 
-        # Serializing
-        serialized_badges = utils.encode_badge_to_json(all_badges)
+        response = paginator(request, f)
 
-        return JsonResponse(serialized_badges, safe=False)
+        return JsonResponse(utils.encode_badge_to_json(response), safe=False)
 
     else:
         return HttpResponse(status=403,

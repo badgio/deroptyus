@@ -2,6 +2,7 @@ import uuid
 
 from django.db import models
 
+import django_filters
 from locations.models import Location
 from users.models import AppUser, PromoterUser
 
@@ -38,3 +39,9 @@ class RedeemedReward(models.Model):
     app_user = models.ForeignKey(AppUser, on_delete=models.CASCADE)
     reward = models.ForeignKey(Reward, on_delete=models.RESTRICT)
     redeemed = models.BooleanField(default=False)
+
+
+class RewardFilter(django_filters.FilterSet):
+    class Meta:
+        model = Reward
+        fields = ['uuid', 'name', 'description', 'status', 'time_redeem', 'promoter__email', 'location__uuid']

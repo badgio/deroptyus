@@ -1,5 +1,6 @@
 import uuid
 
+import django_filters
 from django.db import models
 from django.utils import timezone
 
@@ -33,6 +34,17 @@ class Collection(models.Model):
             ('check_collection_status', 'Can check completion status of a Collection'),
             ('view_stats', 'Can view statistics for a Collection'),
         )
+
+
+class CollectionFilter(django_filters.FilterSet):
+    start_date__lt = django_filters.DateTimeFilter(field_name='start_date', lookup_expr='lt')
+    start_date__gt = django_filters.DateTimeFilter(field_name='start_date', lookup_expr='gt')
+    end_date__lt = django_filters.DateTimeFilter(field_name='end_date', lookup_expr='lt')
+    end_date__gt = django_filters.DateTimeFilter(field_name='end_date', lookup_expr='gt')
+
+    class Meta:
+        model = Collection
+        fields = ['uuid', 'name', 'description', 'start_date', 'end_date', 'promoter__email', 'reward__uuid', 'status']
 
 
 class CollectionBadge(models.Model):

@@ -10,6 +10,7 @@ from rewards import utils as reward_utils
 from users import queries as user_queries
 from . import queries
 from .models import Status
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def decode_image_from_base64(base64_image, filename):
@@ -132,6 +133,22 @@ def encode_collection_status(collection_status, reward):
     reward_fields['collection_status'] = collection_status
 
     return reward_fields
+
+
+def paginator(request, f):
+    page_size = request.GET.get('page_size')
+    f = f.order_by('status')
+    pager = Paginator(f, page_size) if page_size else Paginator(f, 50)
+
+    page = request.GET.get('page')
+    try:
+        response = pager.page(page)
+    except PageNotAnInteger:
+        response = pager.page(1)
+    except EmptyPage:
+        response = pager.page(pager.num_pages)
+
+    return response
 
 
 class NotAValidStartDate(Exception):

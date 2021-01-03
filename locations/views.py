@@ -3,10 +3,9 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import queries, utils
-from .models import Location
+from .models import Location, LocationFilter
+from .utils import paginator
 
-
-# Views
 
 def locations(request):
     # Authenticating user
@@ -117,13 +116,11 @@ def handle_get_locations(request, user):
     # Checking permissions (possibly needs the permission to see if the badge is related to this user)
     if user.has_perm('locations.view_location'):
 
-        # Executing query
-        all_locations = queries.get_locations()
+        f = LocationFilter(request.GET, queryset=Location.objects.all()).qs
 
-        # Serializing
-        serialized_locations = utils.encode_location_to_json(all_locations)
+        response = paginator(request, f)
 
-        return JsonResponse(serialized_locations, safe=False)
+        return JsonResponse(utils.encode_location_to_json(response), safe=False)
 
     else:
         return HttpResponse(status=403,
