@@ -3,7 +3,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import queries, utils
-from .models import Reward
+from .models import Reward, RewardFilter
+from .utils import paginator
 
 
 # Views
@@ -113,13 +114,11 @@ def handle_get_rewards(request, user):
     # Checking permissions (possibly needs the permission to see if the reward is related to this user)
     if user.has_perm('rewards.view_reward'):
 
-        # Executing the query
-        all_rewards = queries.get_rewards()
+        f = RewardFilter(request.GET, queryset=Reward.objects.all()).qs
 
-        # Serializing
-        serialized_rewards = utils.encode_rewards_to_json(all_rewards)
+        response = paginator(request, f)
 
-        return JsonResponse(serialized_rewards, safe=False)
+        return JsonResponse(utils.encode_rewards_to_json(response), safe=False)
 
     else:
         return HttpResponse(status=403,

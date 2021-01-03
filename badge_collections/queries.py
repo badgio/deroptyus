@@ -184,7 +184,10 @@ def get_collection_status(collection_uuid, user_id):
     badges_in_collection_collected = RedeemedBadge.objects.filter(badge__in=badges_in_collection, app_user=apper)
 
     # Collection status
-    collection_status = len(badges_in_collection_collected) / len(badges_in_collection)
+    if len(badges_in_collection):
+        collection_status = len(badges_in_collection_collected) / len(badges_in_collection)
+    else:
+        collection_status = 0
 
     if collection_status != 1:
         return collection_status, None

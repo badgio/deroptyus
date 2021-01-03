@@ -1,41 +1,11 @@
 from django.contrib.auth import authenticate
 from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import queries, utils
 from .models import Location
 from .filters import LocationFilter
-
-
-# Views
-
-def filter_location(request):
-    f = LocationFilter(request.GET, request=request, queryset=Location.objects.all()).qs
-
-    serialized_locations = utils.encode_location_to_json(f)
-
-    return JsonResponse(serialized_locations, safe=False)
-
-
-def location_paginator_filter(request):
-    f = LocationFilter(request.GET, queryset=Location.objects.all()).qs
-
-    page_size = request.GET.get('page_size')
-    if page_size:
-        paginator = Paginator(f, page_size)
-    else:
-        paginator = Paginator(f, 50)
-
-    page = request.GET.get('page')
-    try:
-        response = paginator.page(page)
-    except PageNotAnInteger:
-        response = paginator.page(1)
-    except EmptyPage:
-        response = paginator.page(paginator.num_pages)
-
-    return JsonResponse(utils.encode_location_to_json(response), safe=False)
+from .utils import paginator
 
 
 def locations(request):
@@ -128,13 +98,11 @@ def handle_get_locations(request, user):
     # Checking permissions (possibly needs the permission to see if the badge is related to this user)
     if user.has_perm('locations.view_location'):
 
-        # Executing query
-        all_locations = queries.get_locations()
+        f = LocationFilter(request.GET, queryset=Location.objects.all()).qs
 
-        # Serializing
-        serialized_locations = utils.encode_location_to_json(all_locations)
+        response = paginator(request, f)
 
-        return JsonResponse(serialized_locations, safe=False)
+        return JsonResponse(utils.encode_location_to_json(response), safe=False)
 
     else:
         return HttpResponse(status=403,

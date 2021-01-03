@@ -3,8 +3,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import utils, queries
-from .models import Collection
-
+from .models import Collection, CollectionFilter
+from .utils import paginator
 
 # Views
 
@@ -130,13 +130,11 @@ def handle_get_collections(request, user):
     # Checking permissions (possibly needs the permission to see if the collection is related to this user)
     if user.has_perm('badge_collections.view_collection'):
 
-        # Executing the query
-        all_collections = queries.get_collections()
+        f = CollectionFilter(request.GET, queryset=Collection.objects.all()).qs
 
-        # Serializing
-        serialized_collections = utils.encode_collection_to_json(all_collections)
+        response = paginator(request, f)
 
-        return JsonResponse(serialized_collections, safe=False)
+        return JsonResponse(utils.encode_collection_to_json(response), safe=False)
 
     else:
         return HttpResponse(status=403,

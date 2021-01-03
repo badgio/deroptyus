@@ -24,4 +24,4 @@ class RedeemedCounter(models.Model):
 class TagFilter(django_filters.FilterSet):
     class Meta:
         model = Tag
-        fields = ['uid', 'admin__email', 'location__uuid']
+        fields = ['uid', 'admin__email', 'location__uuid', 'last_counter']

@@ -3,7 +3,8 @@ from django.http import JsonResponse, HttpResponse, HttpResponseNotAllowed
 
 from firebase.auth import InvalidIdToken, NoTokenProvided, FirebaseUserDoesNotExist
 from . import queries, utils, crypto
-from .models import Tag
+from .models import Tag, TagFilter
+from .utils import paginator
 
 
 # Views
@@ -98,13 +99,11 @@ def handle_get_tags(request, user):
     # Checking permissions
     if user.has_perm('tags.view_tag'):
 
-        # Executing the query
-        all_tags = queries.get_tags()
+        f = TagFilter(request.GET, queryset=Tag.objects.all()).qs
 
-        # Serializing
-        serialized_tags = utils.encode_tag_to_json(all_tags)
+        response = paginator(request, f)
 
-        return JsonResponse(serialized_tags, safe=False)
+        return JsonResponse(utils.encode_tag_to_json(response), safe=False)
 
     else:
         return HttpResponse(status=403,

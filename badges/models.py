@@ -41,6 +41,11 @@ class RedeemedBadge(models.Model):
 
 
 class BadgeFilter(django_filters.FilterSet):
+    start_date__lt = django_filters.DateTimeFilter(field_name='start_date', lookup_expr='lt')
+    start_date__gt = django_filters.DateTimeFilter(field_name='start_date', lookup_expr='gt')
+    end_date__lt = django_filters.DateTimeFilter(field_name='end_date', lookup_expr='lt')
+    end_date__gt = django_filters.DateTimeFilter(field_name='end_date', lookup_expr='gt')
+
     class Meta:
         model = Badge
         fields = ['uuid', 'name', 'description', 'status', 'start_date', 'end_date', 'location__uuid', 'promoter__email']

@@ -6,6 +6,7 @@ from django.core import serializers
 
 from users import queries as user_queries
 from .models import Status
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def decode_image_from_base64(base64_image, filename):
@@ -98,6 +99,21 @@ def encode_statistics_to_json(data):
     json_data = data
 
     return json_data
+
+def paginator(request, f):
+    page_size = request.GET.get('page_size')
+    f = f.order_by('status')
+    pager = Paginator(f, page_size) if page_size else Paginator(f, 50)
+
+    page = request.GET.get('page')
+    try:
+        response = pager.page(page)
+    except PageNotAnInteger:
+        response = pager.page(1)
+    except EmptyPage:
+        response = pager.page(pager.num_pages)
+
+    return response
 
 
 class InvalidJSONData(Exception):

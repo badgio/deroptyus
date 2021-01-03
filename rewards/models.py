@@ -42,4 +42,4 @@ class RedeemableReward(models.Model):
 class RewardFilter(django_filters.FilterSet):
     class Meta:
         model = Reward
-        fields = ['uuid', 'status', 'time_redeem', 'promoter__email', 'location__uuid']
+        fields = ['uuid', 'name', 'description', 'status', 'time_redeem', 'promoter__email', 'location__uuid']

@@ -4,6 +4,7 @@ from django.core import serializers
 
 from locations import queries as location_queries
 from users import queries as user_queries
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def encode_tag_to_json(tags):
@@ -58,6 +59,22 @@ def decode_redeem_info_from_json(data):
         raise InvalidJSONData()
 
     return info
+
+
+def paginator(request, f):
+    page_size = request.GET.get('page_size')
+    f = f.order_by('status')
+    pager = Paginator(f, page_size) if page_size else Paginator(f, 50)
+
+    page = request.GET.get('page')
+    try:
+        response = pager.page(page)
+    except PageNotAnInteger:
+        response = pager.page(1)
+    except EmptyPage:
+        response = pager.page(pager.num_pages)
+
+    return response
 
 
 class InvalidJSONData(Exception):
