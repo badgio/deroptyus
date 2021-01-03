@@ -51,4 +51,3 @@ class BadgeFilter(django_filters.FilterSet):
         model = Badge
         fields = ['uuid', 'name', 'description', 'status', 'start_date',
                   'end_date', 'location__uuid', 'promoter__email']
-

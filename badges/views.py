@@ -298,4 +298,3 @@ def handle_get_stats_badge(request, uuid, user):
     # serialized_statistics = utils.encode_statistics_to_json(statistics)
 
     return JsonResponse(statistics, safe=False)
-
