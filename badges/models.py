@@ -49,4 +49,6 @@ class BadgeFilter(django_filters.FilterSet):
 
     class Meta:
         model = Badge
-        fields = ['uuid', 'name', 'description', 'status', 'start_date', 'end_date', 'location__uuid', 'promoter__email']
+        fields = ['uuid', 'name', 'description', 'status', 'start_date', 'end_date',
+                  'location__uuid', 'promoter__email']
+

@@ -122,3 +122,4 @@ class InvalidJSONData(Exception):
 
 class NotAValidImage(Exception):
     pass
+
