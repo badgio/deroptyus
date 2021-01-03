@@ -63,7 +63,7 @@ def decode_redeem_info_from_json(data):
 
 def paginator(request, f):
     page_size = request.GET.get('page_size')
-    f = f.order_by('status')
+    f = f.order_by('uid')
     pager = Paginator(f, page_size) if page_size else Paginator(f, 50)
 
     page = request.GET.get('page')
