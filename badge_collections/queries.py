@@ -1,17 +1,18 @@
 import copy
 from datetime import datetime, timedelta
 
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badges import queries as badges_queries
-from badges.models import RedeemedBadge
+from badges.models import RedeemedBadge, Badge
+from badges.models import Status as BadgeStatus
 from rewards import queries as rewards_queries
 from rewards.models import Reward, RedeemedReward
+from rewards.models import Status as RewardStatus
 from users.models import PromoterUser, AppUser
 from . import utils
-from .models import Collection, CollectionBadge
+from .models import Collection, CollectionBadge, Status
 
 
 def create_collection(collection, user_id):
@@ -33,10 +34,10 @@ def create_collection(collection, user_id):
     collection_created.status = collection.get("status")
 
     if collection.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(collection.get("image"), str(collection_created.uuid))
-        # Storing image
-        collection_created.image = ContentFile(decoded_img, name=filename)
+        # Attempting to decode image from base64 to check if image is valid
+        _, _ = utils.decode_image_from_base64(collection.get("image"), str(collection_created.uuid))
+        # Storing base64 string in the DB
+        collection_created.image = collection.get("image")
 
     # Checking if every badge provided exists
     badges = []
@@ -117,33 +118,29 @@ def patch_collection_by_uuid(collection_uuid, collection):
     elif end_date and end_date <= start_date:
         raise EndDateNotAfterStartDate()
 
-    if collection.get('status'):
-        collection_update.status = collection.get('status')
-
     if "image" in collection:
         # Checking if a null was provided
         if not collection.get("image"):
-            # Deleting previous image from storage
-            if collection_update.image:
-                default_storage.delete(collection_update.image.path)
             # Setting field to null
             collection_update.image = None
         else:
-            # Decoding image from base64
-            decoded_img, filename = utils.decode_image_from_base64(collection.get("image"), str(collection_update.uuid))
-            # Deleting previous image from storage
-            if collection_update.image:
-                default_storage.delete(collection_update.image.path)
-            # Storing image
-            collection_update.image = ContentFile(decoded_img, name=filename)
+            # Attempting to decode image from base64 to check if image is valid
+            _, _ = utils.decode_image_from_base64(collection.get("image"), str(collection_update.uuid))
+            # Storing base64 string in the DB
+            collection_update.image = collection.get("image")
 
     if 'badges' in collection:
         badge_uuids = []
         if collection.get('badges'):
             for badge_uuid in collection.get('badges'):
                 try:
+                    # Getting Badge
+                    badge = badges_queries.get_badge_by_uuid(badge_uuid)
+                    # If the Collection is approved, then all badges submitted must be approved
+                    if collection_update.status == Status.APPROVED and badge.status != BadgeStatus.APPROVED:
+                        raise BadgesMustBeApproved()
                     badge_uuids.append(badge_uuid)
-                except Exception:
+                except Badge.objects.DoesNotExists:
                     raise NotEveryBadgeExists()
 
         # Removing no longer wanted badges
@@ -165,9 +162,25 @@ def patch_collection_by_uuid(collection_uuid, collection):
         collection_update.reward = None
         if collection.get("reward"):
             try:
-                collection_update.reward = rewards_queries.get_reward_by_uuid(collection.get("reward"))
+                reward = rewards_queries.get_reward_by_uuid(collection.get("reward"))
+                if collection_update.status == Status.APPROVED and reward.status != RewardStatus.APPROVED:
+                    raise RewardMustBeApproved()
+                collection_update.reward = reward
             except Reward.DoesNotExist:
                 raise NotAValidReward()
+
+    if collection.get('status'):
+        # If an admin approves a collection, every badge must be approved beforehand
+        if collection.get('status') == Status.APPROVED and \
+                any([col_badge.badge.status != BadgeStatus.APPROVED
+                     for col_badge in CollectionBadge.objects.filter(collection=collection_update)]):
+            raise BadgesMustBeApproved()
+        # If an admin approves a collection with a reward associated, the reward must also be approved
+        if collection.get('status') == Status.APPROVED and \
+                collection_update.reward is not None and collection_update.reward.status != RewardStatus.APPROVED:
+            raise RewardMustBeApproved()
+
+        collection_update.status = collection.get('status')
 
     collection_update.save()
 
@@ -450,4 +463,12 @@ class StartDateAfterEndDate(Exception):
 
 
 class EndDateNotAfterStartDate(Exception):
+    pass
+
+
+class BadgesMustBeApproved(Exception):
+    pass
+
+
+class RewardMustBeApproved(Exception):
     pass

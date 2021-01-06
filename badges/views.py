@@ -212,6 +212,8 @@ def handle_patch_badge(request, uuid, user):
         return HttpResponse(status=400, reason="Bad Request: Starting date must be before the Ending date")
     except queries.EndDateNotAfterStartDate:
         return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
+    except queries.LocationMustBeApproved:
+        return HttpResponse(status=400, reason="Bad Request: Location must be approved for Badge approval")
 
     # Serializing
     serialized_badge = utils.encode_badge_to_json([updated_badge])[0]

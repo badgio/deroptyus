@@ -1,16 +1,16 @@
 import json
-from base64 import b64encode, b64decode
+from base64 import b64decode
 from datetime import datetime
-from mimetypes import guess_type, guess_extension
+from mimetypes import guess_extension
 
 from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from rewards import queries as reward_queries
 from rewards import utils as reward_utils
 from users import queries as user_queries
 from . import queries
 from .models import Status
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def decode_image_from_base64(base64_image, filename):
@@ -33,13 +33,6 @@ def decode_image_from_base64(base64_image, filename):
         raise NotAValidImage(e)
 
 
-def encode_image_to_base64(image, filename):
-    # Encoding image to base64
-    encoded_img = b64encode(image).decode('utf-8')
-    # Sending image with Data URI format
-    return f'data:{guess_type(filename)[0]};base64,{encoded_img}'
-
-
 def encode_collection_to_json(collections):
     serialized_collections = json.loads(serializers.serialize("json",
                                                               collections,
@@ -53,12 +46,6 @@ def encode_collection_to_json(collections):
     for serialized in serialized_collections:
 
         collection_fields = serialized["fields"]
-
-        if collection_fields.get('image'):
-            # Getting image data from storage
-            image_data = open(collection_fields['image'], 'rb').read()
-            # Encoding it
-            collection_fields['image'] = encode_image_to_base64(image_data, collection_fields.get('image'))
 
         if collection_fields.get('promoter'):
             collection_fields['promoter'] = user_queries.get_str_by_promoter_pk(collection_fields.get('promoter'))

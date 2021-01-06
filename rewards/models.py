@@ -17,7 +17,7 @@ class Reward(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.ImageField(upload_to='upload/rewards/', null=True)
+    image = models.TextField(null=True)
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
     time_redeem = models.IntegerField(null=True)  # Time to redeem in seconds
     promoter = models.ForeignKey(PromoterUser, on_delete=models.RESTRICT)

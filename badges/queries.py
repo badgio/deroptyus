@@ -1,13 +1,13 @@
 import copy
 from datetime import datetime, timedelta
 
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badge_collections import queries as badge_collections_queries
 from locations import queries as location_queries
 from locations.models import Location
+from locations.models import Status as LocationStatus
 from users.models import PromoterUser, AppUser
 from . import utils
 from .models import Badge, RedeemedBadge
@@ -30,18 +30,18 @@ def create_badge(badge, user_id):
         else:
             raise EndDateNotAfterStartDate()
 
-    badge_created.status = badge.get("status")
-
     if badge.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(badge.get("image"), str(badge_created.uuid))
-        # Storing image
-        badge_created.image = ContentFile(decoded_img, name=filename)
+        # Attempting to decode image from base64 to check if image is valid
+        _, _ = utils.decode_image_from_base64(badge.get("image"), str(badge_created.uuid))
+        # Storing base64 string in the DB
+        badge_created.image = badge.get("image")
 
     try:
         badge_created.location = Location.objects.get(uuid=badge.get('location'))
     except Location.DoesNotExist:
         raise NotAValidLocation()
+
+    badge_created.status = badge.get("status")
 
     badge_created.promoter = PromoterUser.objects.get(user_id=user_id)
     badge_created.save()
@@ -128,30 +128,31 @@ def patch_badge_by_uuid(badge_uuid, badge):
     elif end_date and end_date <= start_date:
         raise EndDateNotAfterStartDate()
 
-    if badge.get('status'):
-        badge_update.status = badge.get('status')
     if badge.get('location'):
         try:
-            badge_update.location = Location.objects.get(uuid=badge.get('location'))
+            location = Location.objects.get(uuid=badge.get('location'))
+            if badge_update.status == Status.APPROVED and location.status != LocationStatus.APPROVED:
+                raise LocationMustBeApproved()
+            badge_update.location = location
         except Location.DoesNotExist:
             raise NotAValidLocation()
+
+    if badge.get('status'):
+        # If an admin approves a badge, its location has to be approved as well
+        if badge.get('status') == Status.APPROVED and badge_update.location.status != LocationStatus.APPROVED:
+            raise LocationMustBeApproved()
+        badge_update.status = badge.get('status')
 
     if "image" in badge:
         # Checking if a null was provided
         if not badge.get("image"):
-            # Deleting previous image from storage
-            if badge_update.image:
-                default_storage.delete(badge_update.image.path)
             # Setting field to null
             badge_update.image = None
         else:
-            # Decoding image from base64
-            decoded_img, filename = utils.decode_image_from_base64(badge.get("image"), str(badge_update.uuid))
-            # Deleting previous image from storage
-            if badge_update.image:
-                default_storage.delete(badge_update.image.path)
-            # Storing image
-            badge_update.image = ContentFile(decoded_img, name=filename)
+            # Attempting to decode image from base64 to check if image is valid
+            _, _ = utils.decode_image_from_base64(badge.get("image"), str(badge_update.uuid))
+            # Storing base64 string in the DB
+            badge_update.image = badge.get("image")
 
     badge_update.save()
 
@@ -355,4 +356,8 @@ class StartDateAfterEndDate(Exception):
 
 
 class EndDateNotAfterStartDate(Exception):
+    pass
+
+
+class LocationMustBeApproved(Exception):
     pass

@@ -19,7 +19,7 @@ class Collection(models.Model):
     uuid = models.UUIDField(unique=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField()
-    image = models.ImageField(upload_to='upload/collections/', null=True)
+    image = models.TextField(null=True)
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
     start_date = models.DateTimeField(default=timezone.now)
     end_date = models.DateTimeField(null=True)
