@@ -201,6 +201,10 @@ def handle_patch_collection(request, uuid, user):
         return HttpResponse(status=400, reason="Bad Request: Ending date must be later than Starting date")
     except queries.NotEveryBadgeExists:
         return HttpResponse(status=400, reason="Bad Request: Not every Badge UUID provided exists")
+    except queries.BadgesMustBeApproved:
+        return HttpResponse(status=400, reason="Bad Request: Badges must be approved for Collection approval")
+    except queries.RewardMustBeApproved:
+        return HttpResponse(status=400, reason="Bad Request: Reward must be approved for Collection approval")
 
     # Serializing
     serialized_collection = utils.encode_collection_to_json([updated_collection])[0]

@@ -1,12 +1,12 @@
 import json
-from base64 import b64encode, b64decode
-from mimetypes import guess_type, guess_extension
+from base64 import b64decode
+from mimetypes import guess_extension
 
 from django.core import serializers
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from users import queries as user_queries
 from .models import Status
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def decode_image_from_base64(base64_image, filename):
@@ -29,13 +29,6 @@ def decode_image_from_base64(base64_image, filename):
         raise NotAValidImage(e)
 
 
-def encode_image_to_base64(image, filename):
-    # Encoding image to base64
-    encoded_img = b64encode(image).decode('utf-8')
-    # Sending image with Data URI format
-    return f'data:{guess_type(filename)[0]};base64,{encoded_img}'
-
-
 def encode_location_to_json(locations):
     serialized_locations = json.loads(serializers.serialize("json",
                                                             locations,
@@ -50,12 +43,6 @@ def encode_location_to_json(locations):
     for serialized in serialized_locations:
 
         location_fields = serialized["fields"]
-
-        if location_fields.get('image'):
-            # Getting image data from storage
-            image_data = open(location_fields['image'], 'rb').read()
-            # Encoding it
-            location_fields['image'] = encode_image_to_base64(image_data, location_fields.get('image'))
 
         if location_fields.get('manager'):
             location_fields['manager'] = user_queries.get_str_by_manager_pk(location_fields.get('manager'))

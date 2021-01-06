@@ -20,7 +20,7 @@ class Location(models.Model):
     website = models.CharField(max_length=255, null=True)
     latitude = models.FloatField(null=True)
     longitude = models.FloatField(null=True)
-    image = models.ImageField(upload_to='upload/locations/', null=True)
+    image = models.TextField(null=True)
     status = models.CharField(max_length=255, choices=Status.choices, default=Status.PENDING)
     instagram = models.CharField(max_length=255, null=True)
     facebook = models.CharField(max_length=255, null=True)

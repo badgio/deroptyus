@@ -2,7 +2,6 @@ import copy
 import random
 from datetime import datetime, timedelta
 
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
@@ -10,7 +9,7 @@ from badge_collections import queries as badge_collections_queries
 from locations.models import Location
 from users.models import PromoterUser, AppUser
 from . import utils
-from .models import Reward, RedeemedReward
+from .models import Reward, RedeemedReward, Status
 
 CODE_LENGTH = 6
 CODE_DIGITS = '0123456789ABCDEF'
@@ -34,10 +33,10 @@ def create_reward(reward, user_id):
         raise NotAValidLocation()
 
     if reward.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(reward.get("image"), str(reward_created.uuid))
-        # Storing image
-        reward_created.image = ContentFile(decoded_img, name=filename)
+        # Attempting to decode image from base64 to check if image is valid
+        _, _ = utils.decode_image_from_base64(reward.get("image"), str(reward_created.uuid))
+        # Storing base64 string in the DB
+        reward_created.image = reward.get("image")
 
     reward_created.promoter = PromoterUser.objects.get(user_id=user_id)
     reward_created.save()
@@ -92,19 +91,13 @@ def patch_reward_by_uuid(reward_uuid, reward):
     if "image" in reward:
         # Checking if a null was provided
         if not reward.get("image"):
-            # Deleting previous image from storage
-            if reward_update.image:
-                default_storage.delete(reward_update.image.path)
             # Setting field to null
             reward_update.image = None
         else:
-            # Decoding image from base64
-            decoded_img, filename = utils.decode_image_from_base64(reward.get("image"), str(reward_update.uuid))
-            # Deleting previous image from storage
-            if reward_update.image:
-                default_storage.delete(reward_update.image.path)
-            # Storing image
-            reward_update.image = ContentFile(decoded_img, name=filename)
+            # Attempting to decode image from base64 to check if image is valid
+            _, _ = utils.decode_image_from_base64(reward.get("image"), str(reward_update.uuid))
+            # Storing base64 string in the DB
+            reward_update.image = reward.get("image")
 
     reward_update.save()
 
@@ -120,7 +113,7 @@ def award_reward_to_user(collection_uuid, user_id):
 
     # Getting the reward that is associated with the collection
     reward_to_redeem = collection.reward
-    if not reward_to_redeem:
+    if not reward_to_redeem or reward_to_redeem.status != Status.APRROVED:
         return
 
     # Generating a unique code

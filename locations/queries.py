@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime, timedelta
 
-from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.db.models import Q
 
@@ -27,10 +26,10 @@ def create_location(location, user_id):
     location_created.twitter = location.get('twitter')
 
     if location.get("image"):
-        # Decoding image from base64
-        decoded_img, filename = utils.decode_image_from_base64(location.get("image"), str(location_created.uuid))
-        # Storing image
-        location_created.image = ContentFile(decoded_img, name=filename)
+        # Attempting to decode image from base64 to check if image is valid
+        _, _ = utils.decode_image_from_base64(location.get("image"), str(location_created.uuid))
+        # Storing base64 string in the DB
+        location_created.image = location.get("image")
 
     location_created.manager = ManagerUser.objects.get(user_id=user_id)
     location_created.save()
@@ -93,19 +92,13 @@ def patch_location_by_uuid(location_uuid, location):
     if 'image' in location:
         # Checking if a null was provided
         if not location.get("image"):
-            # Deleting previous image from storage
-            if location_update.image:
-                default_storage.delete(location_update.image.path)
             # Setting field to null
             location_update.image = None
         else:
-            # Decoding image from base64
-            decoded_img, filename = utils.decode_image_from_base64(location.get("image"), str(location_update.uuid))
-            # Deleting previous image from storage
-            if location_update.image:
-                default_storage.delete(location_update.image.path)
-            # Storing image
-            location_update.image = ContentFile(decoded_img, name=filename)
+            # Attempting to decode image from base64 to check if image is valid
+            _, _ = utils.decode_image_from_base64(location.get("image"), str(location_update.uuid))
+            # Storing base64 string in the DB
+            location_update.image = location.get("image")
 
     location_update.save()
 
