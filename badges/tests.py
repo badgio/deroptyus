@@ -180,7 +180,14 @@ class BadgeTestCase(TestCase):
         admin_client = Client(HTTP_AUTHORIZATION=users.log_in_admin(email="admin@test.com",
                                                                     password="test_password"))
 
-        # Approving Badge as an Admin
+        # Approving Badge (and location) as an Admin
+
+        response = admin_client.patch(f'/v0/locations/{location_uuid}', {
+            'status': "APPROVED"
+        }, content_type="application/json")
+
+        self.assertEqual(response.status_code, 200)
+
         response = admin_client.patch(f'/v0/badges/{badge_uuid}', {
             'status': "APPROVED"
         }, content_type="application/json")
