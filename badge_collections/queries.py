@@ -136,9 +136,9 @@ def patch_collection_by_uuid(collection_uuid, collection):
                 try:
                     # Getting Badge
                     badge = badges_queries.get_badge_by_uuid(badge_uuid)
+                    # If the Collection is approved, then all badges submitted must be approved
                     if collection_update.status == Status.APPROVED and badge.status != BadgeStatus.APPROVED:
                         raise BadgesMustBeApproved()
-                    # If the Collection is approved, then all badges submitted
                     badge_uuids.append(badge_uuid)
                 except Badge.objects.DoesNotExists:
                     raise NotEveryBadgeExists()
