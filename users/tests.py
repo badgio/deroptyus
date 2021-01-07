@@ -257,6 +257,7 @@ class UsersTestCase(TestCase):
             'redeem_reward',
             'view_collection',
             'check_collection_status',
+            'view_reward',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=appers_permission_codenames).all(),
                             appers_group.permissions.all())
@@ -280,6 +281,7 @@ class UsersTestCase(TestCase):
             'view_location',
             'view_badge',
             'view_collection',
+            'view_reward',
         ]
         self.assertSetEqual(Permission.objects.filter(codename__in=managers_permission_codenames).all(),
                             managers_group.permissions.all())
