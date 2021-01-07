@@ -140,6 +140,16 @@ def get_redeemable_award_by_collection_user(collection_uuid, user_id):
     return RedeemedReward.objects.get(app_user=apper, reward=reward)
 
 
+def get_reward_by_code(redeem_reward_info):
+    # Getting reward by the code
+    try:
+        redeemed_reward = RedeemedReward.objects.get(reward_code=redeem_reward_info.get('reward_code'))
+    except RedeemedReward.DoesNotExist:
+        raise NoRewardByThatCode()
+
+    return redeemed_reward
+
+
 def redeem_reward_by_code(redeem_reward_info):
     # Getting reward by the code
     try:
@@ -158,8 +168,6 @@ def redeem_reward_by_code(redeem_reward_info):
     end_date = redeemed_reward.time_awarded + timedelta(seconds=redeemed_reward.reward.time_redeem)
     if end_date <= datetime.now():  # No longer valid
         raise RewardNoLongerValid()
-
-    return redeemed_reward.reward
 
 
 def get_reward_stats(reward_uuid):

@@ -220,42 +220,43 @@ def handle_delete_reward(request, uuid, user):
 
 
 def handle_redeem_reward(request, user):
-    # Checking permissions
-    if user.has_perm('rewards.redeem_reward'):
+    # Unserializing
+    try:
+        unserialized_redeem_info = utils.decode_redeem_info_from_json(request.body)
 
-        # Unserializing
-        try:
-            unserialized_redeem_info = utils.decode_redeem_info_from_json(request.body)
+        # Required fields
+        if not unserialized_redeem_info.get('reward_code'):
+            return HttpResponse(status=400, reason="Bad Request: Reward Code must be provided")
 
-            # Required fields
-            if not unserialized_redeem_info.get('reward_code'):
-                return HttpResponse(status=400, reason="Bad Request: Reward Code must be provided")
+    except utils.InvalidJSONData:
+        return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
 
-        except utils.InvalidJSONData:
-            return HttpResponse(status=400, reason="Bad Request: Malformed JSON object provided")
+    # Executing query
+    try:
 
-        # Executing query
-        try:
-            reward = queries.redeem_reward_by_code(unserialized_redeem_info)
+        reward = queries.get_reward_by_code(unserialized_redeem_info)
 
-        except queries.NoRewardByThatCode:
-            return HttpResponse(status=404,
-                                reason="Bad Request: No Reward to redeem by that code")
-        except queries.RewardAlreadyRedeemed:
-            return HttpResponse(status=410,
-                                reason="Gone: Reward by that code already redeemed")
-        except queries.RewardNoLongerValid:
-            return HttpResponse(status=400,
-                                reason="Not Found: The Reward expired")
+        # Checking if it's admin or the owner that created the reward
+        if not user.has_perm('rewards.change_reward') and reward.location.manager.user != user:
+            return HttpResponse(status=403,
+                                reason="Forbidden: Current user does not have the permission"
+                                       " required to redeem this reward")
 
-        # Serializing
-        serialized_rewards = utils.encode_rewards_to_json([reward])[0]
-        return JsonResponse(serialized_rewards, safe=False)
+        queries.redeem_reward_by_code(unserialized_redeem_info)
 
-    else:
-        return HttpResponse(status=403,
-                            reason="Forbidden: Current user does not have the permission"
-                                   " required to redeem a reward")
+    except queries.NoRewardByThatCode:
+        return HttpResponse(status=404,
+                            reason="Bad Request: No Reward to redeem by that code")
+    except queries.RewardAlreadyRedeemed:
+        return HttpResponse(status=410,
+                            reason="Gone: Reward by that code already redeemed")
+    except queries.RewardNoLongerValid:
+        return HttpResponse(status=400,
+                            reason="Not Found: The Reward expired")
+
+    # Serializing
+    serialized_rewards = utils.encode_rewards_to_json([reward])[0]
+    return JsonResponse(serialized_rewards, safe=False)
 
 
 def handle_get_stats_reward(request, uuid, user):
