@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime, timedelta
 
-from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badge_collections import queries as badge_collections_queries
@@ -96,9 +95,6 @@ def delete_badge_by_uuid(badge_uuid):
     # Trying to delete badge
     try:
         badge.delete()
-        # Deleting badge image
-        if badge.image:
-            default_storage.delete(badge.image.path)
     except Exception:
         return False  # Couldn't delete
     return True

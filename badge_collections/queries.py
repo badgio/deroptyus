@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime, timedelta
 
-from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badges import queries as badges_queries
@@ -86,9 +85,6 @@ def delete_collection_by_uuid(collection_uuid):
     # Trying to delete collection
     try:
         collection.delete()
-        # Deleting collection image
-        if collection.image:
-            default_storage.delete(collection.image.path)
     except Exception:
         return False  # Couldn't delete
     return True
