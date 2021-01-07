@@ -1,7 +1,6 @@
 import copy
 from datetime import datetime, timedelta
 
-from django.core.files.storage import default_storage
 from django.db.models import Q
 
 from badges.models import RedeemedBadge
