@@ -147,7 +147,7 @@ def get_reward_by_code(redeem_reward_info):
     except RedeemedReward.DoesNotExist:
         raise NoRewardByThatCode()
 
-    return redeemed_reward
+    return redeemed_reward.reward
 
 
 def redeem_reward_by_code(redeem_reward_info):
@@ -160,14 +160,15 @@ def redeem_reward_by_code(redeem_reward_info):
     if redeemed_reward.redeemed:
         raise RewardAlreadyRedeemed()
 
+    # Checking if reward code is still valid
+    if redeemed_reward.reward.time_redeem:
+        end_date = redeemed_reward.time_awarded + timedelta(seconds=redeemed_reward.reward.time_redeem)
+        if end_date <= datetime.now():  # No longer valid
+            raise RewardNoLongerValid()
+
     # Removing the reward as redeemable
     redeemed_reward.redeemed = True
     redeemed_reward.save()
-
-    # Checking if reward code is still valid
-    end_date = redeemed_reward.time_awarded + timedelta(seconds=redeemed_reward.reward.time_redeem)
-    if end_date <= datetime.now():  # No longer valid
-        raise RewardNoLongerValid()
 
 
 def get_reward_stats(reward_uuid):
