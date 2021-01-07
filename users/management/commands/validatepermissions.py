@@ -34,6 +34,7 @@ class Command(BaseCommand):
             'check_collection_status',
             'redeem_badge',
             'redeem_reward',
+            'view_reward',
         ]
 
         # Clearing previous permissions
@@ -59,6 +60,7 @@ class Command(BaseCommand):
             'view_location',
             'view_badge',
             'view_collection',
+            'view_reward',
         ]
 
         # Clearing previous permissions
