@@ -33,7 +33,6 @@ class Command(BaseCommand):
             'view_collection',
             'check_collection_status',
             'redeem_badge',
-            'redeem_reward',
             'view_reward',
         ]
 
@@ -125,6 +124,7 @@ class Command(BaseCommand):
             'view_reward',
             'change_reward',
             'delete_reward',
+            'redeem_reward',
             'view_collection',
             'change_collection',
             'delete_collection',
