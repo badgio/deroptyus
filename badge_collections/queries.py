@@ -86,9 +86,6 @@ def delete_collection_by_uuid(collection_uuid):
     # Trying to delete collection
     try:
         collection.delete()
-        # Deleting collection image
-        if collection.image:
-            default_storage.delete(collection.image.path)
     except Exception:
         return False  # Couldn't delete
     return True

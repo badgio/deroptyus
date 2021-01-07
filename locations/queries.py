@@ -58,9 +58,6 @@ def delete_location_by_uuid(location_uuid):
     # Trying to delete location
     try:
         location.delete()
-        # Deleting location image
-        if location.image:
-            default_storage.delete(location.image.path)
     except Exception:
         return False  # Couldn't delete
     return True

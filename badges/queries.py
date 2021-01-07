@@ -96,9 +96,6 @@ def delete_badge_by_uuid(badge_uuid):
     # Trying to delete badge
     try:
         badge.delete()
-        # Deleting badge image
-        if badge.image:
-            default_storage.delete(badge.image.path)
     except Exception:
         return False  # Couldn't delete
     return True

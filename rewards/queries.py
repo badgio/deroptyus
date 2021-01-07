@@ -65,9 +65,6 @@ def delete_reward_by_uuid(reward_uuid):
     # Trying to delete reward
     try:
         reward.delete()
-        # Deleting reward image
-        if reward.image:
-            default_storage.delete(reward.image.path)
     except Exception:
         return False  # Couldn't delete
     return True
