@@ -7,7 +7,6 @@ from django.utils import timezone
 from badges.models import Badge, RedeemedBadge
 from rewards.models import Reward
 from users.models import PromoterUser, AppUser
-import sys
 
 
 class Status(models.TextChoices):
@@ -52,7 +51,6 @@ class CollectionFilter(django_filters.FilterSet):
         collection_uuid_with_badges = CollectionBadge.objects.\
             filter(badge__uuid__in=badge_uuid_with_location).\
             values_list('collection__uuid', flat=True)
-        print(collection_uuid_with_badges, file=sys.stderr)
         return queryset.filter(**{
             'uuid__in': collection_uuid_with_badges,
         })
