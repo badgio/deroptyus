@@ -37,7 +37,9 @@ class Location(models.Model):
 
 
 class LocationFilter(django_filters.FilterSet):
+    created_by = django_filters.CharFilter(field_name='manager__email')
+    
     class Meta:
         model = Location
-        fields = ['uuid', 'status', 'name', 'website', 'manager__email', 'latitude',
+        fields = ['uuid', 'status', 'name', 'website', 'latitude',
                   'longitude', 'instagram', 'facebook', 'twitter']

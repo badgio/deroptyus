@@ -42,6 +42,8 @@ class RedeemedReward(models.Model):
 
 
 class RewardFilter(django_filters.FilterSet):
+    created_by = django_filters.CharFilter(field_name='promoter__email')
+
     class Meta:
         model = Reward
-        fields = ['uuid', 'name', 'description', 'status', 'time_redeem', 'promoter__email', 'location__uuid']
+        fields = ['uuid', 'name', 'description', 'status', 'time_redeem', 'location__uuid']
