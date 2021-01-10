@@ -109,7 +109,7 @@ def award_reward_to_user(collection_uuid, user_id):
 
     # Getting the reward that is associated with the collection
     reward_to_redeem = collection.reward
-    if not reward_to_redeem or reward_to_redeem.status != Status.APRROVED:
+    if not reward_to_redeem or reward_to_redeem.status != Status.APPROVED:
         return
 
     # Generating a unique code
