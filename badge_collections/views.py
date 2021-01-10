@@ -239,14 +239,14 @@ def handle_get_collection_status(request, uuid, user):
 
         # Executing query
         try:
-            collection_status, reward = queries.get_collection_status(uuid, user)
+            collected_badges, collection_status, reward = queries.get_collection_status(uuid, user)
 
         except Collection.DoesNotExist:
             return HttpResponse(status=404,
                                 reason="Not Found: No Collection by that UID")
 
         # Serializing
-        serialized_collection_status = utils.encode_collection_status(collection_status, reward)
+        serialized_collection_status = utils.encode_collection_status(collected_badges, collection_status, reward)
         return JsonResponse(serialized_collection_status, safe=False)
 
     else:

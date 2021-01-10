@@ -196,6 +196,9 @@ def get_collection_status(collection_uuid, user_id):
     # Counting the number of badges in  in the collection
     badges_in_collection_collected = RedeemedBadge.objects.filter(badge__in=badges_in_collection, app_user=apper)
 
+    # Get UUID of collected badges
+    collected_badges_uuid = [collected_badge.badge.uuid for collected_badge in badges_in_collection_collected]
+
     # Collection status
     if len(badges_in_collection):
         collection_status = len(badges_in_collection_collected) / len(badges_in_collection)
@@ -203,7 +206,7 @@ def get_collection_status(collection_uuid, user_id):
         collection_status = 0
 
     if collection_status != 1:
-        return collection_status, None
+        return collected_badges_uuid, collection_status, None
 
     # Getting reward
     try:
@@ -211,7 +214,7 @@ def get_collection_status(collection_uuid, user_id):
     except RedeemedReward.DoesNotExist:
         redeemable_reward = None
 
-    return collection_status, redeemable_reward
+    return collected_badges_uuid, collection_status, redeemable_reward
 
 
 def redeem_collections_by_badge(badge, user_id):

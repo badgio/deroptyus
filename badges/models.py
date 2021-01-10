@@ -42,12 +42,29 @@ class RedeemedBadge(models.Model):
 
 
 class BadgeFilter(django_filters.FilterSet):
+
+    def collected_filter(self, queryset, name, value):
+
+        # Getting app user that's redeeming the badge
+        try:
+            apper = AppUser.objects.get(email__exact=value)
+        except AppUser.DoesNotExist:
+            return queryset.none()
+
+        badges_collected = RedeemedBadge.objects.filter(app_user=apper).values_list('badge__uuid', flat=True)
+
+        return queryset.filter(**{
+            'uuid__in': badges_collected,
+        })
+
+    collected_by = django_filters.CharFilter(method='collected_filter')
     start_date__lt = django_filters.DateTimeFilter(field_name='start_date', lookup_expr='lt')
     start_date__gt = django_filters.DateTimeFilter(field_name='start_date', lookup_expr='gt')
     end_date__lt = django_filters.DateTimeFilter(field_name='end_date', lookup_expr='lt')
     end_date__gt = django_filters.DateTimeFilter(field_name='end_date', lookup_expr='gt')
+    created_by = django_filters.CharFilter(field_name='promoter__email')
 
     class Meta:
         model = Badge
         fields = ['uuid', 'name', 'description', 'status', 'start_date',
-                  'end_date', 'location__uuid', 'promoter__email']
+                  'end_date', 'location__uuid']

@@ -98,9 +98,12 @@ def decode_collection_from_json(data, admin):
     return collection
 
 
-def encode_collection_status(collection_status, reward):
+def encode_collection_status(collected_badges, collection_status, reward):
     if not reward:
-        return {'collection_status': collection_status}
+        return {
+            'collection_status': collection_status,
+            'collected_badges': collected_badges
+        }
 
     serialized_reward = json.loads(serializers.serialize("json",
                                                          [reward],
@@ -118,6 +121,7 @@ def encode_collection_status(collection_status, reward):
         reward_fields['reward'] = reward_utils.encode_rewards_to_json([reward])[0]
 
     reward_fields['collection_status'] = collection_status
+    reward_fields['collected_badges'] = collected_badges
 
     return reward_fields
 
