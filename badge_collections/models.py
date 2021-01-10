@@ -46,7 +46,6 @@ class CollectionFilter(django_filters.FilterSet):
             'uuid__in': collection_uuid_with_badges,
         })
 
-
     def localtion_filter(self, queryset, name, value):
         badge_uuid_with_location = Badge.objects.filter(location__uuid=value).\
             values_list('uuid', flat=True)
@@ -70,11 +69,12 @@ class CollectionFilter(django_filters.FilterSet):
         # Getting collection with UUID
         for collection in Collection.objects.all():
             badges_in_collection = CollectionBadge.objects.filter(collection=collection).values_list('badge', flat=True)
-            badges_in_collection_collected = RedeemedBadge.objects.filter(badge__in=badges_in_collection, app_user=apper)
-            
+            badges_in_collection_collected = RedeemedBadge.objects.\
+                filter(badge__in=badges_in_collection, app_user=apper)
+
             if badges_in_collection.count() == badges_in_collection_collected.count():
                 collections_completed += [collection.uuid]
-        
+
         return queryset.filter(**{
             'uuid__in': collections_completed,
         })
@@ -91,7 +91,6 @@ class CollectionFilter(django_filters.FilterSet):
     class Meta:
         model = Collection
         fields = ['uuid', 'name', 'description', 'start_date', 'end_date', 'reward__uuid', 'status']
-
 
 
 class CollectionBadge(models.Model):

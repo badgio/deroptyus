@@ -52,7 +52,7 @@ class BadgeFilter(django_filters.FilterSet):
             return queryset.none()
 
         badges_collected = RedeemedBadge.objects.filter(app_user=apper).values_list('badge__uuid', flat=True)
-        
+
         return queryset.filter(**{
             'uuid__in': badges_collected,
         })

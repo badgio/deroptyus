@@ -23,7 +23,7 @@ class RedeemedCounter(models.Model):
 
 class TagFilter(django_filters.FilterSet):
     created_by = django_filters.CharFilter(field_name='admin__email')
-    
+
     class Meta:
         model = Tag
         fields = ['uid', 'admin__email', 'location__uuid', 'last_counter']
