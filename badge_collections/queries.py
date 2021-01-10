@@ -202,7 +202,7 @@ def get_collection_status(collection_uuid, user_id):
 
     # Get UUID of collected badges
     collected_badges_uuid = [collected_badge.badge.uuid for collected_badge in badges_in_collection_collected]
-    
+
     # Collection status
     if len(badges_in_collection):
         collection_status = len(badges_in_collection_collected) / len(badges_in_collection)
