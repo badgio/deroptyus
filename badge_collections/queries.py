@@ -222,7 +222,7 @@ def redeem_collections_by_badge(badge, user_id):
     for collection_id in CollectionBadge.objects.filter(badge=badge).values_list('collection', flat=True):
 
         collection = Collection.objects.get(id=collection_id)
-        collection_status, _ = get_collection_status(collection.uuid, user_id)
+        _, collection_status, _ = get_collection_status(collection.uuid, user_id)
 
         if collection_status == 1:
             rewards_queries.award_reward_to_user(collection.uuid, user_id)
