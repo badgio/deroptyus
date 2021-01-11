@@ -111,7 +111,6 @@ def encode_collection_status(collected_badges, collection_status, reward):
                                                              'reward_code', 'time_awarded',
                                                              'reward']))[0]
 
-    raise Exception()
     reward_fields = serialized_reward['fields']
     if reward_fields.get('collection'):
         reward_fields['collection'] = reward_queries.get_str_by_pk(reward_fields.get('collection'))
