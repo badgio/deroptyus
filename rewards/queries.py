@@ -199,6 +199,7 @@ def get_reward_weekly_report(reward_uuid, map_stats):
     last_week_datetime = datetime.combine(last_week_date, datetime.max.time())
 
     weekly_redeemed_rewards = RedeemedReward.objects.filter(Q(reward__uuid=reward_uuid),
+                                                            Q(redeemed=True),
                                                             Q(time_awarded__gt=last_week_datetime))
 
     for redeemed_reward in weekly_redeemed_rewards:
@@ -215,7 +216,7 @@ def get_reward_weekly_report(reward_uuid, map_stats):
 
 
 def get_reward_main_chart(reward_uuid, map_stats):
-    redeemed_rewards = RedeemedReward.objects.filter(Q(reward__uuid=reward_uuid))
+    redeemed_rewards = RedeemedReward.objects.filter(Q(redeemed=True),Q(reward__uuid=reward_uuid))
 
     for redeemed_reward in redeemed_rewards:
         date = redeemed_reward.time_awarded
@@ -229,7 +230,7 @@ def get_reward_main_chart(reward_uuid, map_stats):
 
 
 def get_reward_secondary_chart(reward_uuid, map_stats):
-    redeemed_rewards = RedeemedReward.objects.filter(Q(reward__uuid=reward_uuid))
+    redeemed_rewards = RedeemedReward.objects.filter(Q(redeemed=True),Q(reward__uuid=reward_uuid))
 
     for redeemed_reward in redeemed_rewards:
         date = redeemed_reward.time_awarded
