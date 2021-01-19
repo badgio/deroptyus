@@ -248,6 +248,7 @@ def get_weekly_stats(map_stats):
     general = 'General'
     busiest_day = None
     countries = 'Countries'
+    other_gender = 'Other'
     female_gender = 'Female'
     male_gender = 'Male'
     most_common_country = None
@@ -265,11 +266,14 @@ def get_weekly_stats(map_stats):
 
     number_female_gender = len(map_stats[female_gender]) if female_gender in map_stats else 0
     number_male_gender = len(map_stats[male_gender]) if male_gender in map_stats else 0
+    number_other_gender = len(map_stats[other_gender]) if other_gender in map_stats else 0
 
-    if number_male_gender > number_female_gender:
+    if number_male_gender > number_female_gender and number_male_gender > number_other_gender:
         most_common_gender = male_gender
-    elif number_female_gender != 0:
+    elif number_female_gender > number_male_gender and number_female_gender > number_other_gender:
         most_common_gender = female_gender
+    elif number_other_gender != 0:
+        most_common_gender = other_gender
     else:
         most_common_gender = None
 
