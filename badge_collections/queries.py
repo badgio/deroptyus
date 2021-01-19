@@ -337,41 +337,43 @@ def get_all_stats(user, date, map_stats):
     countries = 'Countries'
     current_date = datetime.now()
 
-    datetime_birth = datetime.combine(user.date_birth, datetime.min.time())
+    if user.gender:
+        if user.gender not in map_stats:
+            map_stats[user.gender] = {}
+        if date not in map_stats[user.gender]:
+            map_stats[user.gender][date] = 0
+        map_stats[user.gender][date] += 1
 
-    if user.gender not in map_stats:
-        map_stats[user.gender] = {}
-    if date not in map_stats[user.gender]:
-        map_stats[user.gender][date] = 0
-    map_stats[user.gender][date] += 1
-
-    if user.country not in map_stats:
-        map_stats[user.country] = {}
-        map_stats[countries][user.country] = 0
-    if date not in map_stats[user.country]:
-        map_stats[user.country][date] = 0
-    map_stats[user.country][date] += 1
-    map_stats[countries][user.country] += 1
+    if user.country:
+        if user.country not in map_stats:
+            map_stats[user.country] = {}
+            map_stats[countries][user.country] = 0
+        if date not in map_stats[user.country]:
+            map_stats[user.country][date] = 0
+        map_stats[user.country][date] += 1
+        map_stats[countries][user.country] += 1
 
     if date not in map_stats[general]:
         map_stats[general][date] = 0
     map_stats[general][date] += 1
 
-    delta = current_date - datetime_birth
-    delta_years = delta.days / 365.2425
+    if user.date_birth:
+        datetime_birth = datetime.combine(user.date_birth, datetime.min.time())
+        delta = current_date - datetime_birth
+        delta_years = delta.days / 365.2425
 
-    if delta_years < 18:
-        if date not in map_stats[young]:
-            map_stats[young][date] = 0
-        map_stats[young][date] += 1
-    elif delta_years < 65:
-        if date not in map_stats[adult]:
-            map_stats[adult][date] = 0
-        map_stats[adult][date] += 1
-    else:
-        if date not in map_stats[elder]:
-            map_stats[elder][date] = 0
-        map_stats[elder][date] += 1
+        if delta_years < 18:
+            if date not in map_stats[young]:
+                map_stats[young][date] = 0
+            map_stats[young][date] += 1
+        elif delta_years < 65:
+            if date not in map_stats[adult]:
+                map_stats[adult][date] = 0
+            map_stats[adult][date] += 1
+        else:
+            if date not in map_stats[elder]:
+                map_stats[elder][date] = 0
+            map_stats[elder][date] += 1
 
 
 def get_secondary_chart_stats(date, hour, map_stats):
