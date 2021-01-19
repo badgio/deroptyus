@@ -152,6 +152,9 @@ PYREBASE_API_KEY = {
 
 }
 
+# Max Request Size
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760
+
 # Lets TestCases print to stdout
 NOSE_ARGS = ['--nocapture',
              '--nologcapture', ]
