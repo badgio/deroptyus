@@ -169,13 +169,16 @@ def get_badge_stats(badge_uuid):
     map_stats_chart_1[elder] = {}
     map_stats_chart_1[countries] = {}
 
+    badge = get_badge_by_uuid(badge_uuid)
+    badge_name = badge.name
+
     map_stats_week = copy.deepcopy(map_stats_chart_1)
 
     stats_week = get_badge_weekly_report(badge_uuid, map_stats_week)
     stats_chart_1 = get_badge_main_chart(badge_uuid, map_stats_chart_1)
     stats_chart_2 = get_badge_secondary_chart(badge_uuid, map_stats_chart_2)
 
-    return [stats_week, stats_chart_1, stats_chart_2]
+    return [badge_name, stats_week, stats_chart_1, stats_chart_2]
 
 
 def get_badge_weekly_report(badge_uuid, map_stats):
