@@ -246,6 +246,9 @@ def get_collection_stats(collection_uuid):
 
     map_stats_week = copy.deepcopy(map_stats_chart_1)
 
+    collection = get_collection_by_uuid(collection_uuid)
+    collection_name = collection.name
+
     for collection_badge in CollectionBadge.objects.filter(collection__uuid=collection_uuid):
         badge_uuids.append(collection_badge.badge.uuid)
 
@@ -254,7 +257,7 @@ def get_collection_stats(collection_uuid):
     stats_chart_2 = get_collection_secondary_chart(badge_uuids, map_stats_chart_2)
     stats_table = get_collection_table_data(badge_uuids, map_stats_table)
 
-    return [stats_week, stats_chart_1, stats_chart_2, stats_table]
+    return [collection_name, stats_week, stats_chart_1, stats_chart_2, stats_table]
 
 
 def get_collection_weekly_report(collection_uuid, badge_uuids, map_stats):

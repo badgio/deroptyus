@@ -117,11 +117,14 @@ def get_location_stats(location_uuid):
 
     map_stats_week = copy.deepcopy(map_stats_chart_1)
 
+    location = get_location_by_uuid(location_uuid)
+    location_name = location.name
+
     stats_week = get_location_weekly_report(location_uuid, map_stats_week)
     stats_chart_1 = get_location_main_chart(location_uuid, map_stats_chart_1)
     stats_chart_2 = get_location_secondary_chart(location_uuid, map_stats_chart_2)
 
-    return [stats_week, stats_chart_1, stats_chart_2]
+    return [location_name, stats_week, stats_chart_1, stats_chart_2]
 
 
 def get_location_weekly_report(location_uuid, map_stats):

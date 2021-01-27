@@ -187,11 +187,14 @@ def get_reward_stats(reward_uuid):
 
     map_stats_week = copy.deepcopy(map_stats_chart_1)
 
+    reward = get_reward_by_uuid(reward_uuid)
+    reward_name = reward.name
+
     stats_week = get_reward_weekly_report(reward_uuid, map_stats_week)
     stats_chart_1 = get_reward_main_chart(reward_uuid, map_stats_chart_1)
     stats_chart_2 = get_reward_secondary_chart(reward_uuid, map_stats_chart_2)
 
-    return [stats_week, stats_chart_1, stats_chart_2]
+    return [reward_name, stats_week, stats_chart_1, stats_chart_2]
 
 
 def get_reward_weekly_report(reward_uuid, map_stats):
