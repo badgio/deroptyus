@@ -147,7 +147,7 @@ class CollectionTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = json.loads(response.content)
-        self.assertEqual(data[0]['Total_visitors'], 0)
+        self.assertEqual(data[1]['Total_visitors'], 0)
 
         # Logging out
         users.log_out()
