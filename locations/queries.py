@@ -133,13 +133,15 @@ def get_location_weekly_report(location_uuid, map_stats):
     redeemed_rewards = 0
 
     weekly_redeemed_rewards = RedeemedReward.objects.filter(Q(reward__location__uuid=location_uuid),
-                                                            Q(time_awarded__gt=last_week_datetime)).order_by('time_awarded')
+                                                            Q(time_awarded__gt=last_week_datetime)).order_by(
+        'time_awarded')
 
     for redeemed_reward in weekly_redeemed_rewards:
         redeemed_rewards += 1
 
     weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__location__uuid=location_uuid),
-                                                          Q(time_redeemed__gt=last_week_datetime)).order_by('time_redeemed')
+                                                          Q(time_redeemed__gt=last_week_datetime)).order_by(
+        'time_redeemed')
 
     for redeemed_badge in weekly_redeemed_badges:
         date = redeemed_badge.time_redeemed

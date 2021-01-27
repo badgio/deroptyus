@@ -203,7 +203,8 @@ def get_reward_weekly_report(reward_uuid, map_stats):
 
     weekly_redeemed_rewards = RedeemedReward.objects.filter(Q(reward__uuid=reward_uuid),
                                                             Q(redeemed=True),
-                                                            Q(time_awarded__gt=last_week_datetime)).order_by('time_awarded')
+                                                            Q(time_awarded__gt=last_week_datetime)).order_by(
+        'time_awarded')
 
     for redeemed_reward in weekly_redeemed_rewards:
         date = redeemed_reward.time_awarded
