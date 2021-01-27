@@ -267,14 +267,14 @@ def get_collection_weekly_report(collection_uuid, badge_uuids, map_stats):
     redeemed_rewards = 0
 
     weekly_redeemed_rewards = RedeemedReward.objects.filter(Q(reward__collection__uuid=collection_uuid),
-                                                            Q(time_awarded__gt=last_week_datetime))
+                                                            Q(time_awarded__gt=last_week_datetime)).order_by('time_awarded')
 
     for redeemed_reward in weekly_redeemed_rewards:
         redeemed_rewards += 1
 
     for badge_uuid in badge_uuids:
         weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid),
-                                                              Q(time_redeemed__gt=last_week_datetime))
+                                                              Q(time_redeemed__gt=last_week_datetime)).order_by('time_redeemed')
         for redeemed_badge in weekly_redeemed_badges:
             date = redeemed_badge.time_redeemed
             user = redeemed_badge.app_user
@@ -289,7 +289,7 @@ def get_collection_weekly_report(collection_uuid, badge_uuids, map_stats):
 
 def get_collection_main_chart(badge_uuids, map_stats):
     for badge_uuid in badge_uuids:
-        redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
+        redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid)).order_by('time_redeemed')
         for redeemed_badge in redeemed_badges:
             date = redeemed_badge.time_redeemed
             user = redeemed_badge.app_user
@@ -303,7 +303,7 @@ def get_collection_main_chart(badge_uuids, map_stats):
 
 def get_collection_table_data(badge_uuids, map_stats):
     for badge_uuid in badge_uuids:
-        redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
+        redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid)).order_by('time_redeemed')
         for redeemed_badge in redeemed_badges:
             badge = redeemed_badge.badge
             location = badge.location.name
@@ -320,7 +320,7 @@ def get_collection_table_data(badge_uuids, map_stats):
 
 def get_collection_secondary_chart(badge_uuids, map_stats):
     for badge_uuid in badge_uuids:
-        redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
+        redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid)).order_by('time_redeemed')
         for redeemed_badge in redeemed_badges:
             date = redeemed_badge.time_redeemed
 

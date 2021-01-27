@@ -186,7 +186,7 @@ def get_badge_weekly_report(badge_uuid, map_stats):
     last_week_datetime = datetime.combine(last_week_date, datetime.max.time())
 
     weekly_redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid),
-                                                          Q(time_redeemed__gt=last_week_datetime))
+                                                          Q(time_redeemed__gt=last_week_datetime)).order_by('time_redeemed')
 
     for redeemed_badge in weekly_redeemed_badges:
         date = redeemed_badge.time_redeemed
@@ -202,7 +202,7 @@ def get_badge_weekly_report(badge_uuid, map_stats):
 
 
 def get_badge_main_chart(badge_uuid, map_stats):
-    redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
+    redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid)).order_by('time_redeemed')
 
     for redeemed_badge in redeemed_badges:
         date = redeemed_badge.time_redeemed
@@ -216,7 +216,7 @@ def get_badge_main_chart(badge_uuid, map_stats):
 
 
 def get_badge_secondary_chart(badge_uuid, map_stats):
-    redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid))
+    redeemed_badges = RedeemedBadge.objects.filter(Q(badge__uuid=badge_uuid)).order_by('time_redeemed')
 
     for redeemed_badge in redeemed_badges:
         date = redeemed_badge.time_redeemed
