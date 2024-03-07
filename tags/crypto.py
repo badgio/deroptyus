@@ -23,7 +23,7 @@
 import binascii
 import io
 
-from Crypto.Cipher import AES
+from pycryptodome.Cipher import AES
 from Crypto.Hash import CMAC
 
 
